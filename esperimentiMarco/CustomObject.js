@@ -133,13 +133,43 @@ class CustomStar extends CustomObject {
 	}
 
 	move(direction){
+		switch(direction){
+			case 'left':
+				this.object.setVelocityX(-160);
+			break;
+			case 'right':
+				this.object.setVelocityX(160);
+			break;
+			case 'up':
+				this.object.setVelocityY(-160);
+			break;
+			case 'down':
+				this.object.setVelocityY(160);
+			break;
+			case 'still':
+				this.object.setVelocityX(0);
+			break;
+			case 'superstill':
+				this.object.setVelocityX(0);
+				this.object.setVelocityY(0);
+			break;
+			case 'jump':
+				if(this.object.body.touching.down)
+		        {
+		            this.object.setVelocityY(-330);
+		        }
+			break;
+		}
+	}
+
+	/*move(direction){
 		if(direction == 'still'){
 			this.object.setTint(0xff0000);
 		}
 		else{
 			this.object.clearTint();
 		}
-	}
+	}*/
 }
 
 /*var customObjects = {
