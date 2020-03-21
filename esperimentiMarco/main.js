@@ -72,11 +72,17 @@ create ()
     platforms.create(50, 250, 'ground');
     platforms.create(750, 220, 'ground');
 
-    var player = this.physics.add.sprite(100, 450, 'dude').setScale(0.1, 0.1);
-    this.customCommands = new CustomCommands(player, this.input.keyboard);
-    //this.player = player;
-	//player = this.physics.add.staticSprite(100, 450, 'dude');
+    this.customCommands = new CustomCommands(this.input.keyboard);
+    var playerWrapper = new CustomPlayer(this, this.customCommands, 100, 450);
+    playerWrapper.set
+    playerWrapper.setFocus();
+    var player = playerWrapper.getObject();
 
+    //this.cameras.main.setBounds(0, 0, 400, 300);
+	this.cameras.main.startFollow(player);
+
+    /*var player = this.physics.add.sprite(100, 450, 'dude').setScale(0.1, 0.1);
+    this.customCommands = new CustomCommands(player, this.input.keyboard);
     //this.cameras.main.setBounds(0, 0, 400, 300);
     this.cameras.main.startFollow(player);
 
@@ -117,7 +123,7 @@ create ()
         frameRate: 10,
         repeat: -1
     });
-
+	*/
     this.physics.add.collider(player, platforms);
 
     //this.cursors = this.input.keyboard.createCursorKeys();
@@ -130,9 +136,14 @@ create ()
 
     this.stars.children.iterate(function (child) {
 
+    	//new CustomStar(this, child, this.customCommands);
         child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
 
     });
+
+    for(var i = 0; i < this.stars.children.entries.length; i++){
+    	new CustomStar(this, this.stars.children.entries[i], this.customCommands);
+    }
 
     this.physics.add.collider(this.stars, platforms);
     this.physics.add.overlap(player, this.stars, this.collectStar, null, this);
