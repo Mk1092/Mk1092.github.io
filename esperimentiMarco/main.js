@@ -6,7 +6,7 @@ class GameScene extends Phaser.Scene {
 		console.log("constructor");
 		this.score = 0;
 		this.gameOver = false;
-		this.commandsType = 0;
+		//this.commandsType = 0;
 	}
 
 /*var config = {
@@ -50,7 +50,7 @@ preload ()
     //thisPlaceholder = this;
 
     //keyboard = this.input.keyboard;
-    createKeyboardEvents(this);
+    //createKeyboardEvents(this);
 }
 
 /*var platforms;
@@ -73,7 +73,8 @@ create ()
     platforms.create(750, 220, 'ground');
 
     var player = this.physics.add.sprite(100, 450, 'dude').setScale(0.1, 0.1);
-    this.player = player;
+    this.customCommands = new CustomCommands(player, this.input.keyboard);
+    //this.player = player;
 	//player = this.physics.add.staticSprite(100, 450, 'dude');
 
     //this.cameras.main.setBounds(0, 0, 400, 300);
@@ -83,8 +84,21 @@ create ()
     player.setCollideWorldBounds(true);
 
     this.anims.create({
+        key: 'down',
+        frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3}),
+        frameRate: 10,
+        repeat: -1
+    });
+
+    this.anims.create({
+        key: 'up',
+        frames: this.anims.generateFrameNumbers('dude', { start: 4, end: 7}),
+        frameRate: 10,
+        repeat: -1
+    });
+
+    this.anims.create({
         key: 'left',
-        //frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
         frames: this.anims.generateFrameNumbers('dude', { start: 8, end: 11}),
         frameRate: 10,
         repeat: -1
@@ -92,7 +106,7 @@ create ()
 
     this.anims.create({
         key: 'turn',
-        frames: [ { key: 'dude', frame: 4 } ],
+        frames: [ { key: 'dude', frame: 0 } ],
         frameRate: 20
     });
 
@@ -106,7 +120,7 @@ create ()
 
     this.physics.add.collider(player, platforms);
 
-    this.cursors = this.input.keyboard.createCursorKeys();
+    //this.cursors = this.input.keyboard.createCursorKeys();
 
     this.stars = this.physics.add.group({
         key: 'star',
@@ -134,12 +148,7 @@ create ()
 
 update ()
 {
-	if(this.commandsType == 1){
-		isometricCommands(this.player, this.cursors);
-	}
-    else{
-    	platformerCommands(this.player, this.cursors);
-    }
+    this.customCommands.exec();
 }
 
 collectStar (player, star)
