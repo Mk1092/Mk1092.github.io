@@ -85,10 +85,26 @@ create ()
     //this.player.body.collideOnWorldBounds = true;
 	//this.player.onWorldBounds = true;
 
-	let star = new InteractableObject(this, 200, 200);
-    this.physics.add.collider(playable, star, function(){
-    	this.customCommands.setWEvent(star.action, star);
-    }, null, this);
+    var stars = this.add.group();
+    stars.add(new InteractableObject(this, 200, 200, 0xff0000));
+    stars.add(new InteractableObject(this, 500, 200, 0x00ff00));
+    stars.add(new InteractableObject(this, 300, 400, 0x0000ff));
+    
+    var blockStar = this.physics.add.image(300, 300, 'star');
+
+    blockStar.body.setBounce(0.5);
+    blockStar.body.setCollideWorldBounds(true);
+
+    this.physics.add.collider(blockStar, playable);
+    this.physics.add.collider(blockStar, platforms);
+
+    this.physics.add.collider(playable, stars, this.test, null, this);
+
+    var goal = new AutIntObject(this, 650, 150);
+
+    this.physics.add.collider(goal, playable, function() {
+        this.scene.start('preload');
+    }, null, this)
 
     playable.children.iterate(function(child){
     	child.body.setCollideWorldBounds(true);
@@ -100,10 +116,16 @@ update ()
     this.customCommands.exec();
 }
 
-test(player, star){
-	//console.log(this.customCommands.setWEvent);
-	console.log(star.actionCallBack);
-	this.customCommands.setWEvent(star.actionCallBack);
+test(obj1, obj2){
+    if(obj1.setInteractable != null){
+        obj1.setInteractable(obj2);
+        return;
+    }
+    if(obj2.setInteractable != null){
+        obj2.setInteractable(obj1);
+        return;
+    }
+    console.log("error here!!!");
 }
 
 collectStar (player, star)

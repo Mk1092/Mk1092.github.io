@@ -1,6 +1,8 @@
 class InteractableObject extends Phaser.GameObjects.Sprite {
-	constructor(scene, x, y){
+	constructor(scene, x, y, color){
 		super(scene, x, y, "star");
+
+		this.color = color;
 
 		this.setInteractive();
 		this.body = new Phaser.Physics.Arcade.Body(scene.physics.world, this);
@@ -20,7 +22,7 @@ class InteractableObject extends Phaser.GameObjects.Sprite {
 	action(){
 
 		if(this.set){
-			this.setTint(0xff0000);
+			this.setTint(this.color);
 			this.set = false;
 		}
 		else{

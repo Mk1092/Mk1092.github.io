@@ -7,6 +7,7 @@ class CPlayer extends Phaser.GameObjects.Sprite {
 		this.camera = scene.cameras.main;
 		this.customCommands = scene.customCommands;
 
+
 		
 		this.setInteractive();
 		this.body = new Phaser.Physics.Arcade.Body(scene.physics.world, this);
@@ -39,11 +40,33 @@ class CPlayer extends Phaser.GameObjects.Sprite {
 	    scene.add.existing(this);
 	    scene.physics.add.existing(this);
 	    
+	    this.interactingObject = 'nil';
 	}
 
 	setFocus(){
 		this.camera.startFollow(this);
 		this.customCommands.setObject(this);
+	}
+
+	setInteractable(object){
+		this.interactingObject = object;
+	}
+
+	WAction(){
+		if(this.interactingObject === 'nil'){
+			return;
+		}
+
+		if(!this.touchingObject()){
+			this.interactingObject = 'nil';
+			return;
+		}
+
+		this.interactingObject.action();
+	}
+
+	touchingObject(){
+		return this.body.touching.left || this.body.touching.right ||this.body.touching.up ||this.body.touching.down;
 	}
 
 	static createAnimations(scene){

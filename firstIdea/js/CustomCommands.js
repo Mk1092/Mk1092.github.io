@@ -17,20 +17,22 @@ class CustomCommands {
         console.log(funz + "\n\n" + interObj)
         //Nel caso in cui si abbiano argomenti
         //this.keyboard.on('keydown_W', function(){func(arg)}, this);
-        this.keyboard.on('keydown_W', funz, interObj);
+        //this.keyboard.on('keydown_W', funz, interObj);
     }
 
     createKeyboardEvents(){
 
         this.keyboard.on('keydown_W', function (event) {
-            //this.commandsType = 0;
+           if(this.object !== 'undefined'){
+                this.object.WAction();
+           }
         }, this);
 
-        this.keyboard.on('keydown_A', function (event) {
+        /*this.keyboard.on('keydown_A', function (event) {
             //this.commandsType = 1;
         }, this);
 
-        /*this.keyboard.on('keydown_Z', function (event) {
+        this.keyboard.on('keydown_Z', function (event) {
             this.object.angle += 2;
         }, this);
 
