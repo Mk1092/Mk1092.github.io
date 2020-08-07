@@ -15,11 +15,12 @@ Progetto basato su phaser3 e typescript, usando visual studio code
 	$ apt-get install python-software-properties
 	$ curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash –
 	$ apt-get install nodejs
+
 	#verifica della versione
 	$ node -v
 	$ npm -v
 	```
-
+	
 ### installare Visual Studio Code
 
 - guida (linux): https://code.visualstudio.com/docs/setup/linux
@@ -43,8 +44,10 @@ Progetto basato su phaser3 e typescript, usando visual studio code
 - da Visual Studio importare workspace e progetto
 - click destro su index.html e selezionare "Open with Live Server" per fare partire il gioco nel browser
 - da terminale di Visual Studio Code lanciare:
+
 	```
  	tsc -watch
  	```
+
  	per il controllo e aggiornamento live del codice da parte del server
-- lavorare sui file ts in src per il codice etc etc
+- lavorare sui file .ts in ./phaser3/src per il codice etc etc
