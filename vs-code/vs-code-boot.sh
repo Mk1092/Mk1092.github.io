@@ -1,0 +1,1 @@
+code --user-data-dir ~/.config/vscode --extensions-dir ~/.config/vscode/extensions
