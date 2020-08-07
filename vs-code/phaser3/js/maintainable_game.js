@@ -40,16 +40,12 @@ var MaintainableGame;
                 physics: {
                     default: "arcade",
                     arcade: {
-                        gravity: { x: 0, y: 50 },
-                        debug: true,
+                        gravity: { x: 0, y: 0 },
+                        debug: false,
                         x: 0,
                         y: 0,
-                        width: 800,
-                        height: 600
-                        /*setBounds: {
-                            width: 800,
-                            height: 600
-                        }*/
+                        width: 400,
+                        height: 300
                     }
                 },
                 width: 800,
@@ -85,16 +81,51 @@ var MaintainableGame;
         /*--------------------------------------------------------------------*/
         function Player(scene, x, y, texture) {
             var _this = _super.call(this, scene, x, y, texture) || this;
+            _this.speed = 200;
+            _this.direction = { x: 0, y: 0 };
             scene.physics.add.existing(_this);
             scene.add.existing(_this);
+            _this.lastUpdate = new Date().getTime();
+            var WKey = scene.input.keyboard.addKey('W');
+            var AKey = scene.input.keyboard.addKey('A');
+            var SKey = scene.input.keyboard.addKey('S');
+            var DKey = scene.input.keyboard.addKey('D');
+            var player = _this;
+            WKey.on('down', function (event) { player.setDir(0, -1); });
+            AKey.on('down', function (event) { player.setDir(-1, 0); });
+            SKey.on('down', function (event) { player.setDir(0, 1); });
+            DKey.on('down', function (event) { player.setDir(1, 0); });
+            WKey.on('up', function (event) { player.nullDir(false); });
+            AKey.on('up', function (event) { player.nullDir(true); });
+            SKey.on('up', function (event) { player.nullDir(false); });
+            DKey.on('up', function (event) { player.nullDir(true); });
             return _this;
-            //this.body.onCollide = true;
         }
-        Player.prototype.move = function (vx, vy) {
-            moveBy(vx, vy);
+        Player.prototype.setDir = function (x, y) {
+            this.direction.x += x;
+            this.direction.y += y;
+            this.direction.x = Math.max(Math.min(this.direction.x, 1), -1);
+            this.direction.y = Math.max(Math.min(this.direction.y, 1), -1);
+        };
+        Player.prototype.nullDir = function (horizontal) {
+            if (horizontal) {
+                this.direction.x = 0;
+            }
+            else {
+                this.direction.y = 0;
+            }
+        };
+        Player.prototype.move = function () {
+            /*let now = new Date().getTime()
+            let deltaTime = now - this.lastUpdate
+            this.lastUpdate = now*/
+            var vx = this.direction.x * this.speed;
+            var vy = this.direction.y * this.speed;
+            //this.setPosition(px, py)
+            this.setVelocity(vx, vy);
         };
         return Player;
-    }(Phaser.GameObjects.Sprite));
+    }(Phaser.Physics.Arcade.Sprite));
     MaintainableGame.Player = Player;
 })(MaintainableGame || (MaintainableGame = {}));
 var MaintainableGame;
@@ -164,16 +195,16 @@ var MaintainableGame;
             // focus on 0, 0
             this.setView();
             this.bg = this.add.tileSprite(0, 0, 800, 600, 'bg');
-            //this.player = new Player(this, 0, 0, "player")
-            this.object = this.physics.add.image(0, 20, "player");
-            this.obstacle = this.physics.add.image(0, 200, "obstacle");
-            this.obstacle.setAcceleration(0, -300);
-            this.physics.add.collider(this.object, this.obstacle);
-            //let obstacle = this.add.image(0, 200, "obstacle")
+            this.player = new MaintainableGame.Player(this, 0, 0, "player");
+            //this.object = this.physics.add.image(0, 20, "player")
+            this.obstacle = this.physics.add.staticImage(0, 200, "obstacle");
+            //this.obstacle.setAcceleration(0, -300)
+            this.physics.add.collider(this.player, this.obstacle);
         };
         Level1.prototype.update = function () {
             this.bg.tilePositionY += 2;
-            //this.physics.collide(this.object, this.obstacle, function(event){console.log("collision")})
+            this.player.move();
+            //this.physics.collide(this.player, this.obstacle, function(event){console.log("collision")})
             //this.physics.overlap(this.object, this.obstacle, function(event){console.log("overlap")})
             //this.physics.world.collide(this.object, this.obstacle, function(event){console.log("collision")})
             //this.physics.world.overlap(this.object, this.obstacle, function(event){console.log("overlap")})

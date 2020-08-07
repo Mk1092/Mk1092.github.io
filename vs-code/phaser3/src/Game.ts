@@ -18,16 +18,12 @@ namespace MaintainableGame {
                     physics: {
                         default: "arcade",
                         arcade: {
-                            gravity: {x: 0, y: 50},
-                            debug: true,
+                            gravity: {x: 0, y: 0},
+                            debug: false,
                             x: 0,
                             y: 0,
-                            width: 800,
-                            height: 600
-                            /*setBounds: {
-                                width: 800,
-                                height: 600
-                            }*/
+                            width: 400,
+                            height: 300
                         }
                     },
 

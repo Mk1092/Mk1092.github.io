@@ -5,7 +5,7 @@ namespace MaintainableGame {
     export class Level1 extends BaseScene {
         bg : Phaser.GameObjects.TileSprite;
         player : Player
-        object : Phaser.Physics.Arcade.Image
+        //object : Phaser.Physics.Arcade.Image
         obstacle : Phaser.Physics.Arcade.Image
         // -------------------------------------------------------------------------
 
@@ -44,22 +44,20 @@ namespace MaintainableGame {
 
             this.bg = this.add.tileSprite(0, 0, 800, 600, 'bg');
 
-            //this.player = new Player(this, 0, 0, "player")
-            this.object = this.physics.add.image(0, 20, "player")
-            this.obstacle = this.physics.add.image(0, 200, "obstacle")
-            this.obstacle.setAcceleration(0, -300)
+            this.player = new Player(this, 0, 0, "player")
+            //this.object = this.physics.add.image(0, 20, "player")
+            this.obstacle = this.physics.add.staticImage(0, 200, "obstacle")
+            //this.obstacle.setAcceleration(0, -300)
 
-            this.physics.add.collider(this.object, this.obstacle)
-
-            //let obstacle = this.add.image(0, 200, "obstacle")
+            this.physics.add.collider(this.player, this.obstacle)
         }
 
         public update(){
             this.bg.tilePositionY += 2
 
-
+            this.player.move()
                 
-            //this.physics.collide(this.object, this.obstacle, function(event){console.log("collision")})
+            //this.physics.collide(this.player, this.obstacle, function(event){console.log("collision")})
             //this.physics.overlap(this.object, this.obstacle, function(event){console.log("overlap")})
 
             //this.physics.world.collide(this.object, this.obstacle, function(event){console.log("collision")})
