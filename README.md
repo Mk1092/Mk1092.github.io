@@ -6,8 +6,10 @@ Progetto basato su phaser3 e typescript, usando visual studio code
 ## steps:
 
 ### installare node e npm
- -guida (ubuntu): https://www.e2enetworks.com/help/how-to-install-nodejs-npm-on-ubuntu/
- -passi:
+
+- guida (ubuntu): https://www.e2enetworks.com/help/how-to-install-nodejs-npm-on-ubuntu/
+- passi:
+
 	```
 	#aggiunta dei ppa
 	$ apt-get install python-software-properties
@@ -24,7 +26,7 @@ Progetto basato su phaser3 e typescript, usando visual studio code
 - passi:
   - scaricare il pacchetto .deb https://code.visualstudio.com/Download
   - eseguire:
-  
+
 	```
 	$ sudo apt install ./<file>.deb
 	```
