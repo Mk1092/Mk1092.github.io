@@ -1,12 +1,12 @@
 # Mk1092.github.io
 
-vs-code:
+#vs-code:
 Progetto basato su phaser3 e typescript, usando visual studio code
 
-steps:
+##steps:
 
 - installare node e npm
- -guida (ubuntu): [https://www.e2enetworks.com/help/how-to-install-nodejs-npm-on-ubuntu/]
+ -guida (ubuntu): https://www.e2enetworks.com/help/how-to-install-nodejs-npm-on-ubuntu/
  -passi:
 	```
 	#aggiunta dei ppa
@@ -18,9 +18,9 @@ steps:
 	$ npm -v
 	```
 - installare Visual Studio Code
- - guida (linux): [https://code.visualstudio.com/docs/setup/linux]
+ - guida (linux): https://code.visualstudio.com/docs/setup/linux
  - passi:
-  - scaricare il pacchetto .deb [https://code.visualstudio.com/Download]
+  - scaricare il pacchetto .deb https://code.visualstudio.com/Download
   - eseguire:
 	```
 	$ sudo apt install ./<file>.deb
