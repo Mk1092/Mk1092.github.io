@@ -19,10 +19,12 @@ Progetto basato su phaser3 e typescript, usando visual studio code
 	```
 
 ### installare Visual Studio Code
- - guida (linux): https://code.visualstudio.com/docs/setup/linux
- - passi:
-   - scaricare il pacchetto .deb https://code.visualstudio.com/Download
-   - eseguire:
+
+- guida (linux): https://code.visualstudio.com/docs/setup/linux
+- passi:
+  - scaricare il pacchetto .deb https://code.visualstudio.com/Download
+  - eseguire:
+  
 	```
 	$ sudo apt install ./<file>.deb
 	```
