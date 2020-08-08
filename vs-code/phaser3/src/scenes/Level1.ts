@@ -6,6 +6,7 @@ namespace MaintainableGame {
         bg : Phaser.GameObjects.TileSprite;
         player : Player
         obstacle : Phaser.Physics.Arcade.Image
+        //pFactory : ProjectileFactory
 
         // -------------------------------------------------------------------------
 
@@ -36,7 +37,8 @@ namespace MaintainableGame {
 
             this.bg = this.add.tileSprite(0, 0, 800, 600, 'bg');
 
-            this.player = new Player(this, 0, 0)
+            //this.pFactory = new ProjectileFactory()
+            this.player = new Player(this, 0, 0/*, this.pFactory*/)
             this.player.loadAnims()
 
             this.obstacle = this.physics.add.staticImage(0, 200, "obstacle")
@@ -47,6 +49,7 @@ namespace MaintainableGame {
             this.bg.tilePositionY += 2
             this.player.move()
             this.player.checkMouseLeftClick()
+            //this.pFactory.cleanQueue()
         }
     }
 }

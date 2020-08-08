@@ -21,13 +21,21 @@ namespace MaintainableGame{
             console.log(angle)
 
             //this.setAngularVelocity(300)
+            let projectile = this
+            var timer = scene.time.addEvent({
+                delay: this.lifetime,                // ms
+                callback: function(){projectile.destroy()},
+                //args: [],
+                //callbackScope: context,
+                loop: false
+            });
         }
 
-        public checkLifetime(){
+        public checkLifetime() : boolean {
             let now = new Date().getTime()
-            
-            if(now < this.creationTime + this.lifetime)
-                this.destroy()
+            return now < this.creationTime + this.lifetime
+            /*if(now < this.creationTime + this.lifetime)
+                this.destroy()*/
         }
     }
 }

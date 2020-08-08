@@ -2,6 +2,8 @@ namespace MaintainableGame{
 
     export class Player extends Phaser.Physics.Arcade.Sprite{
         baseScene : BaseScene
+        //pFactory : ProjectileFactory
+
         speed : number = 200;
         direction = {x: 0, y: 0}
         isMoving : boolean = false
@@ -11,13 +13,15 @@ namespace MaintainableGame{
 
         /*--------------------------------------------------------------------*/
 
-        constructor(scene : BaseScene, x : number, y:number){
+        constructor(scene : BaseScene, x : number, y:number, /*pFactory : ProjectileFactory*/){
             super(scene, x, y, "player")
 
             scene.physics.add.existing(this)
             scene.add.existing(this)
 
             this.baseScene = scene
+
+            //this.pFactory = pFactory
 
             this.setCollideWorldBounds(true)
 
@@ -49,6 +53,7 @@ namespace MaintainableGame{
             let now = new Date().getTime()
             if(now > this.lastShot + this.shotInterval){
                 new Projectile(this.scene, this.body.center, -px, -py)
+                //this.pFactory.createProjectile(this.scene, this.body.center, -px, -py)
                 this.lastShot = now
             }
         }

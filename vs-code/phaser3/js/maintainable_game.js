@@ -81,6 +81,7 @@ var MaintainableGame;
         /*--------------------------------------------------------------------*/
         function Player(scene, x, y) {
             var _this = _super.call(this, scene, x, y, "player") || this;
+            //pFactory : ProjectileFactory
             _this.speed = 200;
             _this.direction = { x: 0, y: 0 };
             _this.isMoving = false;
@@ -89,6 +90,7 @@ var MaintainableGame;
             scene.physics.add.existing(_this);
             scene.add.existing(_this);
             _this.baseScene = scene;
+            //this.pFactory = pFactory
             _this.setCollideWorldBounds(true);
             _this.addMovementKey('W', 0, -1);
             _this.addMovementKey('A', -1, 0);
@@ -113,6 +115,7 @@ var MaintainableGame;
             var now = new Date().getTime();
             if (now > this.lastShot + this.shotInterval) {
                 new MaintainableGame.Projectile(this.scene, this.body.center, -px, -py);
+                //this.pFactory.createProjectile(this.scene, this.body.center, -px, -py)
                 this.lastShot = now;
             }
         };
@@ -178,13 +181,22 @@ var MaintainableGame;
             angle = angle * 180 / 3.14 + 90;
             _this.setAngle(angle);
             console.log(angle);
-            return _this;
             //this.setAngularVelocity(300)
+            var projectile = _this;
+            var timer = scene.time.addEvent({
+                delay: _this.lifetime,
+                callback: function () { projectile.destroy(); },
+                //args: [],
+                //callbackScope: context,
+                loop: false
+            });
+            return _this;
         }
         Projectile.prototype.checkLifetime = function () {
             var now = new Date().getTime();
-            if (now < this.creationTime + this.lifetime)
-                this.destroy();
+            return now < this.creationTime + this.lifetime;
+            /*if(now < this.creationTime + this.lifetime)
+                this.destroy()*/
         };
         return Projectile;
     }(Phaser.Physics.Arcade.Image));
@@ -239,6 +251,7 @@ var MaintainableGame;
         function Level1() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
+        //pFactory : ProjectileFactory
         // -------------------------------------------------------------------------
         /*constructor(){
             super({
@@ -259,7 +272,8 @@ var MaintainableGame;
             // focus on 0, 0
             this.setView();
             this.bg = this.add.tileSprite(0, 0, 800, 600, 'bg');
-            this.player = new MaintainableGame.Player(this, 0, 0);
+            //this.pFactory = new ProjectileFactory()
+            this.player = new MaintainableGame.Player(this, 0, 0 /*, this.pFactory*/);
             this.player.loadAnims();
             this.obstacle = this.physics.add.staticImage(0, 200, "obstacle");
             this.physics.add.collider(this.player, this.obstacle);
@@ -268,6 +282,7 @@ var MaintainableGame;
             this.bg.tilePositionY += 2;
             this.player.move();
             this.player.checkMouseLeftClick();
+            //this.pFactory.cleanQueue()
         };
         return Level1;
     }(MaintainableGame.BaseScene));
