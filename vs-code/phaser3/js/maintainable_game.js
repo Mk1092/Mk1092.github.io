@@ -67,12 +67,12 @@ var MaintainableGame;
 })(MaintainableGame || (MaintainableGame = {}));
 var MaintainableGame;
 (function (MaintainableGame) {
-    function hello(xp, yp, obj, dimX, dimY) {
+    function setSizeblePos(xp, yp, obj, dimX, dimY) {
         var x = dimX * xp / 100 - obj.width / 2;
         var y = dimY * yp / 100 - obj.height / 2;
         obj.setPosition(x, y);
     }
-    MaintainableGame.hello = hello;
+    MaintainableGame.setSizeblePos = setSizeblePos;
 })(MaintainableGame || (MaintainableGame = {}));
 var MaintainableGame;
 (function (MaintainableGame) {
@@ -84,37 +84,55 @@ var MaintainableGame;
             _this.speed = 200;
             _this.direction = { x: 0, y: 0 };
             _this.isMoving = false;
+            _this.lastShot = 0;
+            _this.shotInterval = 1000;
             scene.physics.add.existing(_this);
             scene.add.existing(_this);
+            _this.baseScene = scene;
             _this.setCollideWorldBounds(true);
-            var WKey = scene.input.keyboard.addKey('W');
-            var AKey = scene.input.keyboard.addKey('A');
-            var SKey = scene.input.keyboard.addKey('S');
-            var DKey = scene.input.keyboard.addKey('D');
-            var player = _this;
-            WKey.on('down', function (event) { player.updateDir(0, -1); });
-            AKey.on('down', function (event) { player.updateDir(-1, 0); });
-            SKey.on('down', function (event) { player.updateDir(0, 1); });
-            DKey.on('down', function (event) { player.updateDir(1, 0); });
-            WKey.on('up', function (event) { player.updateDir(0, 1); });
-            AKey.on('up', function (event) { player.updateDir(1, 0); });
-            SKey.on('up', function (event) { player.updateDir(0, -1); });
-            DKey.on('up', function (event) { player.updateDir(-1, 0); });
+            _this.addMovementKey('W', 0, -1);
+            _this.addMovementKey('A', -1, 0);
+            _this.addMovementKey('S', 0, 1);
+            _this.addMovementKey('D', 1, 0);
             return _this;
         }
+        Player.prototype.addMovementKey = function (key, xDir, yDir) {
+            var MovKey = this.scene.input.keyboard.addKey(key);
+            var player = this;
+            MovKey.on('down', function (event) { player.updateDir(xDir, yDir); });
+            MovKey.on('up', function (event) { player.updateDir(-xDir, -yDir); });
+        };
         Player.prototype.updateDir = function (x, y) {
             this.direction.x += x;
             this.direction.y += y;
             this.direction.x = Math.max(Math.min(this.direction.x, 1), -1);
             this.direction.y = Math.max(Math.min(this.direction.y, 1), -1);
         };
+        Player.prototype.shoot = function (px, py) {
+            this.baseScene.setDebugText("px: " + px + " py: " + py);
+            var now = new Date().getTime();
+            if (now > this.lastShot + this.shotInterval) {
+                new MaintainableGame.Projectile(this.scene, this.body.center, -px, -py);
+                this.lastShot = now;
+            }
+        };
+        Player.prototype.loadAnims = function () {
+            this.scene.anims.create({
+                key: 'still',
+                frames: this.scene.anims.generateFrameNumbers('player', { start: 0 }),
+                frameRate: 0,
+                repeat: -1
+            });
+            this.scene.anims.create({
+                key: 'walk',
+                frames: this.scene.anims.generateFrameNumbers('player', { start: 1, end: 2 }),
+                frameRate: 10,
+                repeat: -1
+            });
+        };
         Player.prototype.move = function () {
-            /*let now = new Date().getTime()
-            let deltaTime = now - this.lastUpdate
-            this.lastUpdate = now*/
             var vx = this.direction.x * this.speed;
             var vy = this.direction.y * this.speed;
-            //this.setPosition(px, py)
             this.setVelocity(vx, vy);
             if (vx != 0 || vy != 0) {
                 if (!this.isMoving) {
@@ -129,9 +147,48 @@ var MaintainableGame;
                 }
             }
         };
+        Player.prototype.checkMouseLeftClick = function () {
+            var leftDown = this.scene.input.mousePointer.leftButtonDown();
+            if (leftDown) {
+                var _a = this.scene.game.canvas, width = _a.width, height = _a.height;
+                var _b = this.scene.input.mousePointer.position, x = _b.x, y = _b.y;
+                this.shoot(x - width / 2, y - height / 2);
+            }
+            else {
+                this.baseScene.setDebugText("");
+            }
+        };
         return Player;
     }(Phaser.Physics.Arcade.Sprite));
     MaintainableGame.Player = Player;
+})(MaintainableGame || (MaintainableGame = {}));
+var MaintainableGame;
+(function (MaintainableGame) {
+    var Projectile = /** @class */ (function (_super) {
+        __extends(Projectile, _super);
+        function Projectile(scene, position, vx, vy) {
+            var _this = _super.call(this, scene, position.x, position.y, "projectile") || this;
+            _this.lifetime = 3000;
+            scene.physics.add.existing(_this);
+            scene.add.existing(_this);
+            _this.setVelocity(vx, vy);
+            _this.creationTime = new Date().getTime();
+            _this.setDrag(50);
+            var angle = Phaser.Math.Angle.Between(0, 0, vx, vy);
+            angle = angle * 180 / 3.14 + 90;
+            _this.setAngle(angle);
+            console.log(angle);
+            return _this;
+            //this.setAngularVelocity(300)
+        }
+        Projectile.prototype.checkLifetime = function () {
+            var now = new Date().getTime();
+            if (now < this.creationTime + this.lifetime)
+                this.destroy();
+        };
+        return Projectile;
+    }(Phaser.Physics.Arcade.Image));
+    MaintainableGame.Projectile = Projectile;
 })(MaintainableGame || (MaintainableGame = {}));
 var MaintainableGame;
 (function (MaintainableGame) {
@@ -140,6 +197,12 @@ var MaintainableGame;
         function BaseScene() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
+        BaseScene.prototype.create = function () {
+            var style = { font: "bold 18px Arial", fill: "#f44" };
+            this.debugText = this.add.text(-400, -300, "", style);
+            this.debugText.depth = 2;
+            //this.debugText.setShadow(3, 3, 'rgba(0,0,0,0.5)', 2);
+        };
         Object.defineProperty(BaseScene.prototype, "gameWidth", {
             // --------------------------------------------------------------------
             get: function () {
@@ -160,6 +223,9 @@ var MaintainableGame;
         BaseScene.prototype.setView = function () {
             // focus on center
             this.cameras.main.centerOn(0, 0);
+        };
+        BaseScene.prototype.setDebugText = function (message) {
+            this.debugText.setText(message);
         };
         return BaseScene;
     }(Phaser.Scene));
@@ -182,50 +248,26 @@ var MaintainableGame;
         }*/
         Level1.prototype.preload = function () {
             this.load.image('bg', './assets/garden.jpeg');
-            //this.load.image('player', './assets/omino.png')
             this.load.image('obstacle', './assets/dude.png');
+            this.load.image('projectile', './assets/arrow.png');
             this.load.spritesheet('player', './assets/omino.png', { frameWidth: 26, frameHeight: 64 });
-            /*var config = {
-                map: {
-                    add: 'makeStuff',
-                    load: 'loader',
-                    physics : "arcade"
-                }
-            };
-    
-            Phaser.Scene.call(this, config)*/
         };
         Level1.prototype.create = function () {
+            _super.prototype.create.call(this);
             // bacground color
             this.cameras.main.backgroundColor = Phaser.Display.Color.ValueToColor(0x8080f0);
             // focus on 0, 0
             this.setView();
             this.bg = this.add.tileSprite(0, 0, 800, 600, 'bg');
             this.player = new MaintainableGame.Player(this, 0, 0);
-            //this.object = this.physics.add.image(0, 20, "player")
+            this.player.loadAnims();
             this.obstacle = this.physics.add.staticImage(0, 200, "obstacle");
-            //this.obstacle.setAcceleration(0, -300)
-            this.anims.create({
-                key: 'walk',
-                frames: this.anims.generateFrameNumbers('player', { start: 1, end: 2 }),
-                frameRate: 10,
-                repeat: -1
-            });
-            this.anims.create({
-                key: 'still',
-                frames: this.anims.generateFrameNumbers('player', { start: 0 }),
-                frameRate: 0,
-                repeat: -1
-            });
             this.physics.add.collider(this.player, this.obstacle);
         };
         Level1.prototype.update = function () {
             this.bg.tilePositionY += 2;
             this.player.move();
-            //this.physics.collide(this.player, this.obstacle, function(event){console.log("collision")})
-            //this.physics.overlap(this.object, this.obstacle, function(event){console.log("overlap")})
-            //this.physics.world.collide(this.object, this.obstacle, function(event){console.log("collision")})
-            //this.physics.world.overlap(this.object, this.obstacle, function(event){console.log("overlap")})
+            this.player.checkMouseLeftClick();
         };
         return Level1;
     }(MaintainableGame.BaseScene));
@@ -289,9 +331,7 @@ var MaintainableGame;
             var _a = this.sys.game.canvas, width = _a.width, height = _a.height;
             // bacground color
             this.cameras.main.backgroundColor = Phaser.Display.Color.ValueToColor(0x8080f0);
-            //this.logo = this.add.image(+InitPhaser.gameRef.config["width"]/2, +InitPhaser.gameRef.config["height"] / 3, 'logo');
             this.logo = this.add.image(width / 2, height / 2, 'logo');
-            //lalala.hello(50, 50, this.logo, window.innerWidth, window.innerHeight)
             this.logo.setScale(.5, .5);
             var tween = this.tweens.add({
                 targets: this.logo,
@@ -300,15 +340,12 @@ var MaintainableGame;
                 yoyo: true,
                 repeat: -1
             });
-            //this.add.text(0, 0, 'Hello World', { font: '"Press Start 2P"' });
             var style = { font: "bold 24px Arial", fill: "#fff" };
-            //  The Text is positioned at 0, 100
             var text = this.add.text(0, 0, "Premi invio", style);
             text.setShadow(3, 3, 'rgba(0,0,0,0.5)', 2);
-            MaintainableGame.hello(50, 45, text, width, height);
+            MaintainableGame.setSizeblePos(50, 45, text, width, height);
             var ctx = this;
             var keyObj = this.input.keyboard.addKey('Enter');
-            //keyObj.on('down', function(event) {ctx.scene.start("Menu")});
             keyObj.on('down', function (event) { ctx.scene.start("Level1"); });
         };
         return Welcome;
