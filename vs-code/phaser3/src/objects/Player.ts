@@ -3,17 +3,17 @@ namespace MaintainableGame{
     export class Player extends Phaser.Physics.Arcade.Sprite{
         speed : number = 200;
         direction = {x: 0, y: 0}
-        lastUpdate : number
+        isMoving : boolean = false
 
         /*--------------------------------------------------------------------*/
 
-        constructor(scene : Phaser.Scene, x : number, y:number, texture:string){
-            super(scene, x, y, texture)
+        constructor(scene : Phaser.Scene, x : number, y:number){
+            super(scene, x, y, "player")
 
             scene.physics.add.existing(this)
             scene.add.existing(this)
 
-            this.lastUpdate = new Date().getTime()
+            this.setCollideWorldBounds(true)
 
             var WKey = scene.input.keyboard.addKey('W')
             var AKey = scene.input.keyboard.addKey('A')
@@ -22,32 +22,23 @@ namespace MaintainableGame{
 
             let player = this
 
-            WKey.on('down', function(event) {player.setDir(0, -1)});
-            AKey.on('down', function(event) {player.setDir(-1, 0)});
-            SKey.on('down', function(event) {player.setDir(0, 1)});
-            DKey.on('down', function(event) {player.setDir(1, 0)});
+            WKey.on('down', function(event) {player.updateDir(0, -1)});
+            AKey.on('down', function(event) {player.updateDir(-1, 0)});
+            SKey.on('down', function(event) {player.updateDir(0, 1)});
+            DKey.on('down', function(event) {player.updateDir(1, 0)});
 
-            WKey.on('up', function(event) {player.nullDir(false)});
-            AKey.on('up', function(event) {player.nullDir(true)});
-            SKey.on('up', function(event) {player.nullDir(false)});
-            DKey.on('up', function(event) {player.nullDir(true)});
+            WKey.on('up', function(event) {player.updateDir(0, 1)});
+            AKey.on('up', function(event) {player.updateDir(1, 0)});
+            SKey.on('up', function(event) {player.updateDir(0, -1)});
+            DKey.on('up', function(event) {player.updateDir(-1, 0)});
         }
 
-        setDir(x : number, y : number){
+        updateDir(x : number, y : number){
             this.direction.x += x
             this.direction.y += y
 
             this.direction.x = Math.max(Math.min(this.direction.x, 1), -1)
             this.direction.y = Math.max(Math.min(this.direction.y, 1), -1)
-        }
-
-        nullDir(horizontal : boolean){
-            if(horizontal){
-                this.direction.x = 0
-            }
-            else{
-                this.direction.y = 0
-            }
         }
 
         public move(){
@@ -61,6 +52,21 @@ namespace MaintainableGame{
             //this.setPosition(px, py)
 
             this.setVelocity(vx, vy)
+
+            if(vx != 0 || vy != 0){
+                if(!this.isMoving){
+                    this.scene.anims.play('walk', this)
+                    this.isMoving = true
+                }
+                
+            }
+            else{
+                if(this.isMoving){
+                    this.scene.anims.play('still', this)
+                    this.isMoving = false;
+                }
+                
+            }
         }
     }
 

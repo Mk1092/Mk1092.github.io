@@ -42,10 +42,10 @@ var MaintainableGame;
                     arcade: {
                         gravity: { x: 0, y: 0 },
                         debug: false,
-                        x: 0,
-                        y: 0,
-                        width: 400,
-                        height: 300
+                        x: -400,
+                        y: -300,
+                        width: 800,
+                        height: 600
                     }
                 },
                 width: 800,
@@ -79,41 +79,34 @@ var MaintainableGame;
     var Player = /** @class */ (function (_super) {
         __extends(Player, _super);
         /*--------------------------------------------------------------------*/
-        function Player(scene, x, y, texture) {
-            var _this = _super.call(this, scene, x, y, texture) || this;
+        function Player(scene, x, y) {
+            var _this = _super.call(this, scene, x, y, "player") || this;
             _this.speed = 200;
             _this.direction = { x: 0, y: 0 };
+            _this.isMoving = false;
             scene.physics.add.existing(_this);
             scene.add.existing(_this);
-            _this.lastUpdate = new Date().getTime();
+            _this.setCollideWorldBounds(true);
             var WKey = scene.input.keyboard.addKey('W');
             var AKey = scene.input.keyboard.addKey('A');
             var SKey = scene.input.keyboard.addKey('S');
             var DKey = scene.input.keyboard.addKey('D');
             var player = _this;
-            WKey.on('down', function (event) { player.setDir(0, -1); });
-            AKey.on('down', function (event) { player.setDir(-1, 0); });
-            SKey.on('down', function (event) { player.setDir(0, 1); });
-            DKey.on('down', function (event) { player.setDir(1, 0); });
-            WKey.on('up', function (event) { player.nullDir(false); });
-            AKey.on('up', function (event) { player.nullDir(true); });
-            SKey.on('up', function (event) { player.nullDir(false); });
-            DKey.on('up', function (event) { player.nullDir(true); });
+            WKey.on('down', function (event) { player.updateDir(0, -1); });
+            AKey.on('down', function (event) { player.updateDir(-1, 0); });
+            SKey.on('down', function (event) { player.updateDir(0, 1); });
+            DKey.on('down', function (event) { player.updateDir(1, 0); });
+            WKey.on('up', function (event) { player.updateDir(0, 1); });
+            AKey.on('up', function (event) { player.updateDir(1, 0); });
+            SKey.on('up', function (event) { player.updateDir(0, -1); });
+            DKey.on('up', function (event) { player.updateDir(-1, 0); });
             return _this;
         }
-        Player.prototype.setDir = function (x, y) {
+        Player.prototype.updateDir = function (x, y) {
             this.direction.x += x;
             this.direction.y += y;
             this.direction.x = Math.max(Math.min(this.direction.x, 1), -1);
             this.direction.y = Math.max(Math.min(this.direction.y, 1), -1);
-        };
-        Player.prototype.nullDir = function (horizontal) {
-            if (horizontal) {
-                this.direction.x = 0;
-            }
-            else {
-                this.direction.y = 0;
-            }
         };
         Player.prototype.move = function () {
             /*let now = new Date().getTime()
@@ -123,6 +116,18 @@ var MaintainableGame;
             var vy = this.direction.y * this.speed;
             //this.setPosition(px, py)
             this.setVelocity(vx, vy);
+            if (vx != 0 || vy != 0) {
+                if (!this.isMoving) {
+                    this.scene.anims.play('walk', this);
+                    this.isMoving = true;
+                }
+            }
+            else {
+                if (this.isMoving) {
+                    this.scene.anims.play('still', this);
+                    this.isMoving = false;
+                }
+            }
         };
         return Player;
     }(Phaser.Physics.Arcade.Sprite));
@@ -177,8 +182,9 @@ var MaintainableGame;
         }*/
         Level1.prototype.preload = function () {
             this.load.image('bg', './assets/garden.jpeg');
-            this.load.image('player', './assets/bomb.png');
+            //this.load.image('player', './assets/omino.png')
             this.load.image('obstacle', './assets/dude.png');
+            this.load.spritesheet('player', './assets/omino.png', { frameWidth: 26, frameHeight: 64 });
             /*var config = {
                 map: {
                     add: 'makeStuff',
@@ -195,10 +201,22 @@ var MaintainableGame;
             // focus on 0, 0
             this.setView();
             this.bg = this.add.tileSprite(0, 0, 800, 600, 'bg');
-            this.player = new MaintainableGame.Player(this, 0, 0, "player");
+            this.player = new MaintainableGame.Player(this, 0, 0);
             //this.object = this.physics.add.image(0, 20, "player")
             this.obstacle = this.physics.add.staticImage(0, 200, "obstacle");
             //this.obstacle.setAcceleration(0, -300)
+            this.anims.create({
+                key: 'walk',
+                frames: this.anims.generateFrameNumbers('player', { start: 1, end: 2 }),
+                frameRate: 10,
+                repeat: -1
+            });
+            this.anims.create({
+                key: 'still',
+                frames: this.anims.generateFrameNumbers('player', { start: 0 }),
+                frameRate: 0,
+                repeat: -1
+            });
             this.physics.add.collider(this.player, this.obstacle);
         };
         Level1.prototype.update = function () {

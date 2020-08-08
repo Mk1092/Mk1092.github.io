@@ -20,10 +20,10 @@ namespace MaintainableGame {
                         arcade: {
                             gravity: {x: 0, y: 0},
                             debug: false,
-                            x: 0,
-                            y: 0,
-                            width: 400,
-                            height: 300
+                            x: -400,
+                            y: -300,
+                            width: 800,
+                            height: 600
                         }
                     },
 
