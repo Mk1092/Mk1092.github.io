@@ -311,7 +311,7 @@ var MaintainableGame;
         Level1.prototype.preload = function () {
             this.load.image('bg', './assets/garden.jpeg');
             this.load.image('obstacle', './assets/dude.png');
-            this.load.image('projectile', './assets/arrow.png');
+            this.load.image('projectile', './assets/arrow3.png');
             this.load.spritesheet('player', './assets/omino.png', { frameWidth: 26, frameHeight: 64 });
         };
         Level1.prototype.create = function () {
