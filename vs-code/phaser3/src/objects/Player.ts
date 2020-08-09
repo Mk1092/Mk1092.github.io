@@ -2,18 +2,20 @@ namespace MaintainableGame{
 
     export class Player extends Phaser.Physics.Arcade.Sprite{
         baseScene : BaseScene
-        //pFactory : ProjectileFactory
 
-        speed : number = 200;
+        static speed : number = 200;
         direction = {x: 0, y: 0}
         isMoving : boolean = false
 
         lastShot = 0
-        shotInterval = 1000
+        static shotInterval = 1000
+
+        aim2Player = true
+        aimLine : Phaser.GameObjects.Line = null
 
         /*--------------------------------------------------------------------*/
 
-        constructor(scene : BaseScene, x : number, y:number, /*pFactory : ProjectileFactory*/){
+        constructor(scene : BaseScene, x : number, y:number){
             super(scene, x, y, "player")
 
             scene.physics.add.existing(this)
@@ -21,15 +23,25 @@ namespace MaintainableGame{
 
             this.baseScene = scene
 
-            //this.pFactory = pFactory
-
             this.setCollideWorldBounds(true)
 
             this.addMovementKey('W', 0, -1)
-            this.addMovementKey('A', -1, 0);
-            this.addMovementKey('S', 0, 1);
-            this.addMovementKey('D', 1, 0);
+            this.addMovementKey('A', -1, 0)
+            this.addMovementKey('S', 0, 1)
+            this.addMovementKey('D', 1, 0)
 
+            let player = this
+            scene.setDebugText("Personaggio")
+            this.addDownKeyCommand('Space', function() {
+                player.aim2Player = !player.aim2Player
+                if(player.aim2Player)
+                    scene.setDebugText("Personaggio")
+                else{
+                    scene.setDebugText("Centro")
+                }
+            })
+
+            this.aimLine = this.scene.add.line(0, 0, 0, 0, 0, 0, 0xff0000).setOrigin(0, 0)
         }
 
         private addMovementKey(key : string, xDir : number, yDir : number){
@@ -37,6 +49,11 @@ namespace MaintainableGame{
             let player = this
             MovKey.on('down', function(event) {player.updateDir(xDir, yDir)})
             MovKey.on('up', function(event) {player.updateDir(-xDir, -yDir)})
+        }
+
+        private addDownKeyCommand(key : string, callback : Function) {
+            let commandKey = this.scene.input.keyboard.addKey(key)
+            commandKey.on('down', callback)
         }
 
         private updateDir(x : number, y : number){
@@ -47,13 +64,20 @@ namespace MaintainableGame{
             this.direction.y = Math.max(Math.min(this.direction.y, 1), -1)
         }
 
-        private shoot(px : number, py : number){
-            this.baseScene.setDebugText("px: " + px + " py: " + py)
+        private shoot(mousePos : Phaser.Math.Vector2){
+            let aim : Phaser.Math.Vector2
+            if(this.aim2Player){
+                aim = this.body.center
+            }
+            else{
+                aim = new Phaser.Math.Vector2(0, 0)
+            }
+
+            this.setLine(mousePos, aim)
 
             let now = new Date().getTime()
-            if(now > this.lastShot + this.shotInterval){
-                new Projectile(this.scene, this.body.center, -px, -py)
-                //this.pFactory.createProjectile(this.scene, this.body.center, -px, -py)
+            if(now > this.lastShot + Player.shotInterval){
+                new Projectile(this.scene, this.body.center, mousePos, this.aim2Player)
                 this.lastShot = now
             }
         }
@@ -78,8 +102,8 @@ namespace MaintainableGame{
 
         public move(){
 
-            let vx = this.direction.x * this.speed
-            let vy = this.direction.y * this.speed
+            let vx = this.direction.x * Player.speed
+            let vy = this.direction.y * Player.speed
 
             this.setVelocity(vx, vy)
 
@@ -104,12 +128,19 @@ namespace MaintainableGame{
 
             if(leftDown){
                 let {width, height} = this.scene.game.canvas
-                let {x, y} = this.scene.input.mousePointer.position
-                this.shoot(x - width/2, y - height/2)
+                let center = new Phaser.Math.Vector2(width/2, height/2)
+                let mousePos = this.scene.input.mousePointer.position.clone().subtract(center)
+                this.shoot(mousePos)
             }
             else{
-                this.baseScene.setDebugText("")
+                this.setLine()
             }
+        }
+
+        private setLine(start : Phaser.Math.Vector2 = null, end : Phaser.Math.Vector2 = null){
+            this.aimLine.destroy()
+            if(start !== null &&  end != null)
+                this.aimLine = this.scene.add.line(0, 0, start.x, start.y, end.x, end.y, 0xff0000).setOrigin(0, 0)
         }
     }
 

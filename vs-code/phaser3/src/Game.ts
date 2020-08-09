@@ -19,7 +19,7 @@ namespace MaintainableGame {
                         default: "arcade",
                         arcade: {
                             gravity: {x: 0, y: 0},
-                            debug: true,
+                            debug: false,
                             x: -400,
                             y: -300,
                             width: 800,

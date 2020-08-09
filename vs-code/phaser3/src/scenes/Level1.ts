@@ -49,7 +49,6 @@ namespace MaintainableGame {
             this.bg.tilePositionY += 2
             this.player.move()
             this.player.checkMouseLeftClick()
-            //this.pFactory.cleanQueue()
         }
     }
 }

@@ -41,7 +41,7 @@ var MaintainableGame;
                     default: "arcade",
                     arcade: {
                         gravity: { x: 0, y: 0 },
-                        debug: true,
+                        debug: false,
                         x: -400,
                         y: -300,
                         width: 800,
@@ -81,21 +81,30 @@ var MaintainableGame;
         /*--------------------------------------------------------------------*/
         function Player(scene, x, y) {
             var _this = _super.call(this, scene, x, y, "player") || this;
-            //pFactory : ProjectileFactory
-            _this.speed = 200;
             _this.direction = { x: 0, y: 0 };
             _this.isMoving = false;
             _this.lastShot = 0;
-            _this.shotInterval = 1000;
+            _this.aim2Player = true;
+            _this.aimLine = null;
             scene.physics.add.existing(_this);
             scene.add.existing(_this);
             _this.baseScene = scene;
-            //this.pFactory = pFactory
             _this.setCollideWorldBounds(true);
             _this.addMovementKey('W', 0, -1);
             _this.addMovementKey('A', -1, 0);
             _this.addMovementKey('S', 0, 1);
             _this.addMovementKey('D', 1, 0);
+            var player = _this;
+            scene.setDebugText("Personaggio");
+            _this.addDownKeyCommand('Space', function () {
+                player.aim2Player = !player.aim2Player;
+                if (player.aim2Player)
+                    scene.setDebugText("Personaggio");
+                else {
+                    scene.setDebugText("Centro");
+                }
+            });
+            _this.aimLine = _this.scene.add.line(0, 0, 0, 0, 0, 0, 0xff0000).setOrigin(0, 0);
             return _this;
         }
         Player.prototype.addMovementKey = function (key, xDir, yDir) {
@@ -104,18 +113,28 @@ var MaintainableGame;
             MovKey.on('down', function (event) { player.updateDir(xDir, yDir); });
             MovKey.on('up', function (event) { player.updateDir(-xDir, -yDir); });
         };
+        Player.prototype.addDownKeyCommand = function (key, callback) {
+            var commandKey = this.scene.input.keyboard.addKey(key);
+            commandKey.on('down', callback);
+        };
         Player.prototype.updateDir = function (x, y) {
             this.direction.x += x;
             this.direction.y += y;
             this.direction.x = Math.max(Math.min(this.direction.x, 1), -1);
             this.direction.y = Math.max(Math.min(this.direction.y, 1), -1);
         };
-        Player.prototype.shoot = function (px, py) {
-            this.baseScene.setDebugText("px: " + px + " py: " + py);
+        Player.prototype.shoot = function (mousePos) {
+            var aim;
+            if (this.aim2Player) {
+                aim = this.body.center;
+            }
+            else {
+                aim = new Phaser.Math.Vector2(0, 0);
+            }
+            this.setLine(mousePos, aim);
             var now = new Date().getTime();
-            if (now > this.lastShot + this.shotInterval) {
-                new MaintainableGame.Projectile(this.scene, this.body.center, -px, -py);
-                //this.pFactory.createProjectile(this.scene, this.body.center, -px, -py)
+            if (now > this.lastShot + Player.shotInterval) {
+                new MaintainableGame.Projectile(this.scene, this.body.center, mousePos, this.aim2Player);
                 this.lastShot = now;
             }
         };
@@ -134,8 +153,8 @@ var MaintainableGame;
             });
         };
         Player.prototype.move = function () {
-            var vx = this.direction.x * this.speed;
-            var vy = this.direction.y * this.speed;
+            var vx = this.direction.x * Player.speed;
+            var vy = this.direction.y * Player.speed;
             this.setVelocity(vx, vy);
             if (vx != 0 || vy != 0) {
                 if (!this.isMoving) {
@@ -154,13 +173,23 @@ var MaintainableGame;
             var leftDown = this.scene.input.mousePointer.leftButtonDown();
             if (leftDown) {
                 var _a = this.scene.game.canvas, width = _a.width, height = _a.height;
-                var _b = this.scene.input.mousePointer.position, x = _b.x, y = _b.y;
-                this.shoot(x - width / 2, y - height / 2);
+                var center = new Phaser.Math.Vector2(width / 2, height / 2);
+                var mousePos = this.scene.input.mousePointer.position.clone().subtract(center);
+                this.shoot(mousePos);
             }
             else {
-                this.baseScene.setDebugText("");
+                this.setLine();
             }
         };
+        Player.prototype.setLine = function (start, end) {
+            if (start === void 0) { start = null; }
+            if (end === void 0) { end = null; }
+            this.aimLine.destroy();
+            if (start !== null && end != null)
+                this.aimLine = this.scene.add.line(0, 0, start.x, start.y, end.x, end.y, 0xff0000).setOrigin(0, 0);
+        };
+        Player.speed = 200;
+        Player.shotInterval = 1000;
         return Player;
     }(Phaser.Physics.Arcade.Sprite));
     MaintainableGame.Player = Player;
@@ -169,16 +198,22 @@ var MaintainableGame;
 (function (MaintainableGame) {
     var Projectile = /** @class */ (function (_super) {
         __extends(Projectile, _super);
-        function Projectile(scene, position, vx, vy) {
+        function Projectile(scene, position, mousePos, playerAim) {
+            if (playerAim === void 0) { playerAim = true; }
             var _this = _super.call(this, scene, position.x, position.y, "projectile") || this;
             _this.stopTime = null;
             scene.physics.add.existing(_this);
             scene.add.existing(_this);
             _this.setCircle(_this.body.width / 2);
-            _this.setVelocity(vx * Projectile.vFactor, vy * Projectile.vFactor);
+            var vel = mousePos.clone();
+            vel.negate();
+            if (playerAim) {
+                vel.add(position);
+            }
+            _this.setVelocity(vel.x * Projectile.vFactor, vel.y * Projectile.vFactor);
             _this.setDamping(true);
             _this.setDrag(Projectile.dFactor);
-            var angle = Phaser.Math.Angle.Between(0, 0, vx, vy);
+            var angle = Phaser.Math.Angle.Between(0, 0, vel.x, vel.y);
             angle = angle * 180 / 3.14 + 90;
             _this.setAngle(angle);
             _this.destroyAfterLongStop();
@@ -296,7 +331,6 @@ var MaintainableGame;
             this.bg.tilePositionY += 2;
             this.player.move();
             this.player.checkMouseLeftClick();
-            //this.pFactory.cleanQueue()
         };
         return Level1;
     }(MaintainableGame.BaseScene));
