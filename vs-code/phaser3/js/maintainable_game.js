@@ -41,7 +41,7 @@ var MaintainableGame;
                     default: "arcade",
                     arcade: {
                         gravity: { x: 0, y: 0 },
-                        debug: false,
+                        debug: true,
                         x: -400,
                         y: -300,
                         width: 800,
@@ -171,33 +171,47 @@ var MaintainableGame;
         __extends(Projectile, _super);
         function Projectile(scene, position, vx, vy) {
             var _this = _super.call(this, scene, position.x, position.y, "projectile") || this;
-            _this.lifetime = 3000;
+            _this.stopTime = null;
             scene.physics.add.existing(_this);
             scene.add.existing(_this);
-            _this.setVelocity(vx, vy);
-            _this.creationTime = new Date().getTime();
-            _this.setDrag(50);
+            _this.setCircle(_this.body.width / 2);
+            _this.setVelocity(vx * Projectile.vFactor, vy * Projectile.vFactor);
+            _this.setDamping(true);
+            _this.setDrag(Projectile.dFactor);
             var angle = Phaser.Math.Angle.Between(0, 0, vx, vy);
             angle = angle * 180 / 3.14 + 90;
             _this.setAngle(angle);
-            console.log(angle);
-            //this.setAngularVelocity(300)
-            var projectile = _this;
-            var timer = scene.time.addEvent({
-                delay: _this.lifetime,
-                callback: function () { projectile.destroy(); },
+            _this.destroyAfterLongStop();
+            return _this;
+        }
+        Projectile.prototype.setTimerEvent = function () {
+            var projectile = this;
+            var timer = this.scene.time.addEvent({
+                delay: 200,
+                callback: function () { projectile.destroyAfterLongStop(); },
                 //args: [],
                 //callbackScope: context,
                 loop: false
             });
-            return _this;
-        }
-        Projectile.prototype.checkLifetime = function () {
-            var now = new Date().getTime();
-            return now < this.creationTime + this.lifetime;
-            /*if(now < this.creationTime + this.lifetime)
-                this.destroy()*/
         };
+        Projectile.prototype.destroyAfterLongStop = function () {
+            if (this.body.velocity.length() < 20) {
+                if (this.stopTime === null) {
+                    this.stopTime = new Date().getTime();
+                }
+                else {
+                    var now = new Date().getTime();
+                    if (now > this.stopTime + Projectile.stillLifetime) {
+                        this.destroy();
+                        return;
+                    }
+                }
+            }
+            this.setTimerEvent();
+        };
+        Projectile.vFactor = 1.8;
+        Projectile.dFactor = 0.98;
+        Projectile.stillLifetime = 2000;
         return Projectile;
     }(Phaser.Physics.Arcade.Image));
     MaintainableGame.Projectile = Projectile;
