@@ -1,7 +1,9 @@
-namespace MaintainableGame{
+namespace GreedyArcher{
 
     export class Player extends Phaser.Physics.Arcade.Sprite{
+
         baseScene : BaseScene
+        projectiles : ProjectileGroup
 
         static speed : number = 200;
         direction = {x: 0, y: 0}
@@ -10,18 +12,20 @@ namespace MaintainableGame{
         lastShot = 0
         static shotInterval = 1000
 
-        aim2Player = true
+        playerAim = true
         aimLine : Phaser.GameObjects.Line = null
 
         /*--------------------------------------------------------------------*/
 
-        constructor(scene : BaseScene, x : number, y:number){
+        constructor(scene : BaseScene, x : number, y:number, projectiles : ProjectileGroup){
             super(scene, x, y, "player")
 
             scene.physics.add.existing(this)
             scene.add.existing(this)
 
             this.baseScene = scene
+
+            this.projectiles = projectiles
 
             this.setCollideWorldBounds(true)
 
@@ -33,8 +37,8 @@ namespace MaintainableGame{
             let player = this
             scene.setDebugText("Personaggio")
             this.addDownKeyCommand('Space', function() {
-                player.aim2Player = !player.aim2Player
-                if(player.aim2Player)
+                player.playerAim = !player.playerAim
+                if(player.playerAim)
                     scene.setDebugText("Personaggio")
                 else{
                     scene.setDebugText("Centro")
@@ -66,7 +70,7 @@ namespace MaintainableGame{
 
         private shoot(mousePos : Phaser.Math.Vector2){
             let aim : Phaser.Math.Vector2
-            if(this.aim2Player){
+            if(this.playerAim){
                 aim = this.body.center
             }
             else{
@@ -77,7 +81,9 @@ namespace MaintainableGame{
 
             let now = new Date().getTime()
             if(now > this.lastShot + Player.shotInterval){
-                new Projectile(this.scene, this.body.center, mousePos, this.aim2Player)
+                this.projectiles.fire(this.body.center, mousePos, this.playerAim)
+                //new Projectile(this.scene, this.body.center, mousePos, this.aim2Player)
+                //this.baseScene.addProjectile(new Projectile(this.scene, this.body.center, mousePos, this.aim2Player))
                 this.lastShot = now
             }
         }
@@ -136,6 +142,11 @@ namespace MaintainableGame{
                 this.setLine()
             }
         }
+
+        /*public update(){
+            this.move()
+            this.checkMouseLeftClick()
+        }*/
 
         private setLine(start : Phaser.Math.Vector2 = null, end : Phaser.Math.Vector2 = null){
             this.aimLine.destroy()

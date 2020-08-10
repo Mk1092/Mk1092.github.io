@@ -1,6 +1,6 @@
 ///<reference path = "BaseScene.ts" />
 
-namespace MaintainableGame {
+namespace GreedyArcher {
 
     export class Menu extends BaseScene {
 

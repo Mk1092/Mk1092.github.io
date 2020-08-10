@@ -1,4 +1,4 @@
-namespace MaintainableGame {
+namespace GreedyArcher {
 
     export class Game extends Phaser.Game {
 

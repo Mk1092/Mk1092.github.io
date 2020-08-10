@@ -8,7 +8,7 @@ namespace App {
 // -------------------------------------------------------------------------
 function launch(): void {
 
-    let game = new MaintainableGame.Game();
+    let game = new GreedyArcher.Game();
     App.game = game;
 }
 

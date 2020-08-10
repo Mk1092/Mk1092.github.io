@@ -1,4 +1,4 @@
-namespace MaintainableGame{
+namespace GreedyArcher{
     interface sizable {
         width : number
         height : number

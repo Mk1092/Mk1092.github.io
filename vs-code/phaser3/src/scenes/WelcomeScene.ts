@@ -1,7 +1,7 @@
 ///<reference path = "BaseScene.ts" />
 ///<reference path = "../GameUtils.ts" />
 
-namespace MaintainableGame {
+namespace GreedyArcher {
 
     export class Welcome extends BaseScene {
         logo: Phaser.GameObjects.Image;
