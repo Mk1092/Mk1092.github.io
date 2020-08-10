@@ -83,6 +83,8 @@ var GreedyArcher;
             _this.setScale(2, 2);
             return _this;
         }
+        Obstacle.dFactor = 1;
+        Obstacle.bounce = 1;
         return Obstacle;
     }(Phaser.Physics.Arcade.Image));
     GreedyArcher.Obstacle = Obstacle;
@@ -94,6 +96,10 @@ var GreedyArcher;
         ObstacleGroup.prototype.addObject = function (child) {
             _super.prototype.add.call(this, child, true);
             child.setCollideWorldBounds(true);
+            child.setDamping(true);
+            child.setDrag(Obstacle.dFactor);
+            child.setBounce(Obstacle.bounce);
+            //child.setCircle(child.width/2)
         };
         return ObstacleGroup;
     }(Phaser.Physics.Arcade.Group));
@@ -407,7 +413,7 @@ var GreedyArcher;
             this.load.image('bg', './assets/pavement3.png');
             this.load.image('obstacle', './assets/bomb.png');
             this.load.image('projectile', './assets/arrow3.png');
-            this.load.spritesheet('player', './assets/omino.png', { frameWidth: 26, frameHeight: 64 });
+            this.load.spritesheet('player', './assets/archerD.png', { frameWidth: 52, frameHeight: 64 });
         };
         Level1.prototype.create = function () {
             _super.prototype.create.call(this);

@@ -22,7 +22,7 @@ namespace GreedyArcher {
             this.load.image('bg', './assets/pavement3.png')
             this.load.image('obstacle', './assets/bomb.png')
             this.load.image('projectile', './assets/arrow3.png')
-            this.load.spritesheet('player', './assets/omino.png', { frameWidth: 26, frameHeight: 64 })
+            this.load.spritesheet('player', './assets/archerD.png', { frameWidth: 52, frameHeight: 64 })
             
         }
 
