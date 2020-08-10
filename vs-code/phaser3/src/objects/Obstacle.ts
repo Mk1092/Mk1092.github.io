@@ -1,17 +1,21 @@
 namespace GreedyArcher{
     export class Obstacle extends Phaser.Physics.Arcade.Image {
 
-        baseScene : BaseScene
-
         constructor(scene : BaseScene, x: number, y : number){
             super(scene, x, y, "obstacle")
-
-            //scene.physics.add.existing(this)
-            //scene.add.existing(this)
-
-            this.baseScene = scene
-
             this.setScale(2, 2)
+        }
+    }
+
+    export class ObstacleGroup extends Phaser.Physics.Arcade.Group {
+        
+        constructor(scene : Phaser.Scene){
+            super(scene.physics.world, scene)
+        }
+
+        addObject(child: Phaser.Physics.Arcade.Image | Phaser.Physics.Arcade.Sprite){
+            super.add(child, true)
+            child.setCollideWorldBounds(true)
         }
     }
 }

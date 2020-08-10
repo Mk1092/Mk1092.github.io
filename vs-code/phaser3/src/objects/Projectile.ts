@@ -76,35 +76,6 @@ namespace GreedyArcher{
                 }
             }
         }
-
-        /*private setTimerEvent(){
-            let projectile = this
-                var timer = this.scene.time.addEvent({
-                    delay: 200,                // ms
-                    callback: function(){projectile.destroyAfterLongStop()},
-                    //args: [],
-                    //callbackScope: context,
-                    loop: false
-                });
-        }
-
-        private destroyAfterLongStop(){
-
-            if(this.body.velocity.length() < 20){
-                if(this.stopTime === null){
-                    this.stopTime = new Date().getTime()
-                }
-                else{
-                    let now = new Date().getTime()
-                    if(now > this.stopTime + Projectile.stillLifetime){
-                        this.destroy()
-                        return
-                    }
-                }
-            }
-
-            this.setTimerEvent()
-        }*/
     }
 
     export class ProjectileGroup extends Phaser.Physics.Arcade.Group{

@@ -28,23 +28,11 @@ namespace GreedyArcher {
 
         public create() {
             super.create()
-
-            /*this.projectiles = new ProjectileGroup(this)
-            this.player = new Player(this, 0, 0, this.projectiles)
-            this.player.loadAnims()
             
-            // bacground color
-            this.cameras.main.backgroundColor = Phaser.Display.Color.ValueToColor(0x8080f0);
-
-            // focus on 0, 0
-            this.setView();
-
-            //this.bg = this.add.tileSprite(0, 0, 800, 600, 'bg');
-
-            
-            this.obstacles = this.physics.add.group()*/
-            this.obstacles.add(new Obstacle(this, 150, 150), true)
-            this.obstacles.add(new Obstacle(this, 120, 150), true)
+            //this.obstacles.add(new Obstacle(this, 150, 150), true)
+            //this.obstacles.add(new Obstacle(this, 120, 150), true)
+            this.obstacles.addObject(new Obstacle(this, 150, 150))
+            this.obstacles.addObject(new Obstacle(this, 120, 150))
             //this.physics.add.collider(this.projectiles, this.obstacles)
             
         }

@@ -3,7 +3,8 @@ namespace GreedyArcher {
     export class BaseScene extends Phaser.Scene {
         bg : Phaser.GameObjects.TileSprite;
         player : Player
-        obstacles : Phaser.Physics.Arcade.Group
+        //obstacles : Phaser.Physics.Arcade.Group
+        obstacles : ObstacleGroup
         projectiles : ProjectileGroup
         debugText : Phaser.GameObjects.Text
 
@@ -23,7 +24,8 @@ namespace GreedyArcher {
             this.player = new Player(this, 0, 0, this.projectiles)
             this.player.loadAnims()
             
-            this.obstacles = this.physics.add.group()
+            //this.obstacles = this.physics.add.group()
+            this.obstacles = new ObstacleGroup(this)
             this.physics.add.collider(this.projectiles, this.obstacles)
             this.physics.add.collider(this.obstacles, this.obstacles)
         }

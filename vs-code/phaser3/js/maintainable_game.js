@@ -80,15 +80,24 @@ var GreedyArcher;
         __extends(Obstacle, _super);
         function Obstacle(scene, x, y) {
             var _this = _super.call(this, scene, x, y, "obstacle") || this;
-            //scene.physics.add.existing(this)
-            //scene.add.existing(this)
-            _this.baseScene = scene;
             _this.setScale(2, 2);
             return _this;
         }
         return Obstacle;
     }(Phaser.Physics.Arcade.Image));
     GreedyArcher.Obstacle = Obstacle;
+    var ObstacleGroup = /** @class */ (function (_super) {
+        __extends(ObstacleGroup, _super);
+        function ObstacleGroup(scene) {
+            return _super.call(this, scene.physics.world, scene) || this;
+        }
+        ObstacleGroup.prototype.addObject = function (child) {
+            _super.prototype.add.call(this, child, true);
+            child.setCollideWorldBounds(true);
+        };
+        return ObstacleGroup;
+    }(Phaser.Physics.Arcade.Group));
+    GreedyArcher.ObstacleGroup = ObstacleGroup;
 })(GreedyArcher || (GreedyArcher = {}));
 var GreedyArcher;
 (function (GreedyArcher) {
@@ -332,7 +341,8 @@ var GreedyArcher;
             this.projectiles = new GreedyArcher.ProjectileGroup(this);
             this.player = new GreedyArcher.Player(this, 0, 0, this.projectiles);
             this.player.loadAnims();
-            this.obstacles = this.physics.add.group();
+            //this.obstacles = this.physics.add.group()
+            this.obstacles = new GreedyArcher.ObstacleGroup(this);
             this.physics.add.collider(this.projectiles, this.obstacles);
             this.physics.add.collider(this.obstacles, this.obstacles);
         };
@@ -401,22 +411,10 @@ var GreedyArcher;
         };
         Level1.prototype.create = function () {
             _super.prototype.create.call(this);
-            /*this.projectiles = new ProjectileGroup(this)
-            this.player = new Player(this, 0, 0, this.projectiles)
-            this.player.loadAnims()
-            
-            // bacground color
-            this.cameras.main.backgroundColor = Phaser.Display.Color.ValueToColor(0x8080f0);
-
-            // focus on 0, 0
-            this.setView();
-
-            //this.bg = this.add.tileSprite(0, 0, 800, 600, 'bg');
-
-            
-            this.obstacles = this.physics.add.group()*/
-            this.obstacles.add(new GreedyArcher.Obstacle(this, 150, 150), true);
-            this.obstacles.add(new GreedyArcher.Obstacle(this, 120, 150), true);
+            //this.obstacles.add(new Obstacle(this, 150, 150), true)
+            //this.obstacles.add(new Obstacle(this, 120, 150), true)
+            this.obstacles.addObject(new GreedyArcher.Obstacle(this, 150, 150));
+            this.obstacles.addObject(new GreedyArcher.Obstacle(this, 120, 150));
             //this.physics.add.collider(this.projectiles, this.obstacles)
         };
         Level1.prototype.update = function (time, delta) {
