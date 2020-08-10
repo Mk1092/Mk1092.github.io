@@ -91,14 +91,11 @@ namespace GreedyArcher{
             let now = new Date().getTime()
             if(now > this.lastShot + Player.shotInterval){
                 this.projectiles.fire(this.body.center, mousePos, this.playerAim)
-                //new Projectile(this.scene, this.body.center, mousePos, this.aim2Player)
-                //this.baseScene.addProjectile(new Projectile(this.scene, this.body.center, mousePos, this.aim2Player))
                 this.lastShot = now
             }
         }
 
         public loadAnims(){
-
             this.scene.anims.create({
                 key: 'still',
                 frames: this.scene.anims.generateFrameNumbers('player', {start: 0}),
@@ -112,10 +109,9 @@ namespace GreedyArcher{
                 frameRate: 10,
                 repeat: -1
             });
-
         }
 
-        public move(){
+        public animateMovement(){
 
             let vx = this.direction.x * Player.speed
             let vy = this.direction.y * Player.speed
@@ -159,7 +155,7 @@ namespace GreedyArcher{
         }
 
         public update(){
-            this.move()
+            this.animateMovement()
             this.checkMouseLeftClick()
         }
 

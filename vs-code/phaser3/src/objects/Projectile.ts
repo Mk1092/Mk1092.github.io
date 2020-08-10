@@ -6,32 +6,6 @@ namespace GreedyArcher{
         static stillLifetime = 2000
         stopTime : number = null
 
-        /*constructor(scene : Phaser.Scene, position : Phaser.Math.Vector2, mousePos : Phaser.Math.Vector2, playerAim : boolean = true){
-            super(scene, position.x, position.y, "projectile")
-
-            scene.physics.add.existing(this)
-            scene.add.existing(this)
-
-            this.setCircle(this.body.width/2)
-            
-            let vel = mousePos.clone()
-            vel.negate()
-            if(playerAim){
-                vel.add(position)
-            }
-
-            this.setVelocity(vel.x * Projectile.vFactor, vel.y * Projectile.vFactor)
-
-            this.setDamping(true)
-            this.setDrag(Projectile.dFactor)
-
-            let angle = Phaser.Math.Angle.Between(0, 0, vel.x, vel.y)
-            angle = angle * 180 / 3.14 + 90
-            this.setAngle(angle)
-
-            this.destroyAfterLongStop()
-        }*/
-
         constructor(scene : Phaser.Scene){
             super(scene, 0, 0, "projectile")
             

@@ -13,7 +13,6 @@ namespace GreedyArcher {
 
             this.debugText = this.add.text(-400, -300, "", style);
             this.debugText.depth = 2
-            //this.debugText.setShadow(3, 3, 'rgba(0,0,0,0.5)', 2);
 
             // focus on 0, 0
             this.setView();
