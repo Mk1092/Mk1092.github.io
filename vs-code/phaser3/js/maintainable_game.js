@@ -117,6 +117,7 @@ var GreedyArcher;
             _this.lastShot = 0;
             _this.playerAim = true;
             _this.aimLine = null;
+            _this.arrowLoaded = false;
             scene.physics.add.existing(_this);
             scene.add.existing(_this);
             _this.baseScene = scene;
@@ -155,7 +156,11 @@ var GreedyArcher;
             this.direction.x = Math.max(Math.min(this.direction.x, 1), -1);
             this.direction.y = Math.max(Math.min(this.direction.y, 1), -1);
         };
-        Player.prototype.shoot = function (mousePos) {
+        Player.prototype.showAimLine = function (mousePos) {
+            if (!mousePos) {
+                this.setLine();
+                return;
+            }
             var aim;
             if (this.playerAim) {
                 aim = this.body.center;
@@ -164,6 +169,8 @@ var GreedyArcher;
                 aim = new Phaser.Math.Vector2(0, 0);
             }
             this.setLine(mousePos, aim);
+        };
+        Player.prototype.shoot = function (mousePos) {
             var now = new Date().getTime();
             if (now > this.lastShot + Player.shotInterval) {
                 this.projectiles.fire(this.body.center, mousePos, this.playerAim);
@@ -205,20 +212,25 @@ var GreedyArcher;
         };
         Player.prototype.checkMouseLeftClick = function () {
             var leftDown = this.scene.input.mousePointer.leftButtonDown();
+            var _a = this.scene.game.canvas, width = _a.width, height = _a.height;
+            var center = new Phaser.Math.Vector2(width / 2, height / 2);
+            var mousePos = this.scene.input.mousePointer.position.clone().subtract(center);
             if (leftDown) {
-                var _a = this.scene.game.canvas, width = _a.width, height = _a.height;
-                var center = new Phaser.Math.Vector2(width / 2, height / 2);
-                var mousePos = this.scene.input.mousePointer.position.clone().subtract(center);
-                this.shoot(mousePos);
+                this.arrowLoaded = true;
+                this.showAimLine(mousePos);
             }
             else {
                 this.setLine();
+                if (this.arrowLoaded) {
+                    this.shoot(mousePos);
+                    this.arrowLoaded = false;
+                }
             }
         };
-        /*public update(){
-            this.move()
-            this.checkMouseLeftClick()
-        }*/
+        Player.prototype.update = function () {
+            this.move();
+            this.checkMouseLeftClick();
+        };
         Player.prototype.setLine = function (start, end) {
             if (start === void 0) { start = null; }
             if (end === void 0) { end = null; }
@@ -227,7 +239,7 @@ var GreedyArcher;
                 this.aimLine = this.scene.add.line(0, 0, start.x, start.y, end.x, end.y, 0xff0000).setOrigin(0, 0);
         };
         Player.speed = 200;
-        Player.shotInterval = 1000;
+        Player.shotInterval = 500;
         return Player;
     }(Phaser.Physics.Arcade.Sprite));
     GreedyArcher.Player = Player;
@@ -314,6 +326,7 @@ var GreedyArcher;
                 key: 'bullet',
                 active: false,
                 visible: false,
+                setXY: { x: 1000, y: 1000 },
                 classType: Projectile
             });
             _this.runChildUpdate = true;
@@ -424,8 +437,9 @@ var GreedyArcher;
             //this.physics.add.collider(this.projectiles, this.obstacles)
         };
         Level1.prototype.update = function (time, delta) {
-            this.player.move();
-            this.player.checkMouseLeftClick();
+            //this.player.move()
+            //this.player.checkMouseLeftClick()
+            this.player.update();
             this.projectiles.preUpdate(time, delta);
         };
         return Level1;

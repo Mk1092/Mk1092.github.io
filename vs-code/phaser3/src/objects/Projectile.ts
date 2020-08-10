@@ -87,6 +87,7 @@ namespace GreedyArcher{
                 key: 'bullet',
                 active: false,
                 visible: false,
+                setXY: {x: 1000, y:1000},
                 classType: Projectile
             })
 

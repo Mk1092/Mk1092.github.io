@@ -10,10 +10,11 @@ namespace GreedyArcher{
         isMoving : boolean = false
 
         lastShot = 0
-        static shotInterval = 1000
+        static shotInterval = 500
 
         playerAim = true
         aimLine : Phaser.GameObjects.Line = null
+        arrowLoaded = false
 
         /*--------------------------------------------------------------------*/
 
@@ -68,7 +69,13 @@ namespace GreedyArcher{
             this.direction.y = Math.max(Math.min(this.direction.y, 1), -1)
         }
 
-        private shoot(mousePos : Phaser.Math.Vector2){
+        private showAimLine(mousePos? : Phaser.Math.Vector2){
+
+            if(!mousePos){
+                this.setLine()
+                return
+            }
+
             let aim : Phaser.Math.Vector2
             if(this.playerAim){
                 aim = this.body.center
@@ -78,7 +85,9 @@ namespace GreedyArcher{
             }
 
             this.setLine(mousePos, aim)
+        }
 
+        private shoot(mousePos : Phaser.Math.Vector2){
             let now = new Date().getTime()
             if(now > this.lastShot + Player.shotInterval){
                 this.projectiles.fire(this.body.center, mousePos, this.playerAim)
@@ -129,24 +138,30 @@ namespace GreedyArcher{
             }
         }
 
-        public checkMouseLeftClick(){
+        private checkMouseLeftClick(){
             let leftDown = this.scene.input.mousePointer.leftButtonDown()
 
+            let {width, height} = this.scene.game.canvas
+            let center = new Phaser.Math.Vector2(width/2, height/2)
+            let mousePos = this.scene.input.mousePointer.position.clone().subtract(center)
+                    
             if(leftDown){
-                let {width, height} = this.scene.game.canvas
-                let center = new Phaser.Math.Vector2(width/2, height/2)
-                let mousePos = this.scene.input.mousePointer.position.clone().subtract(center)
-                this.shoot(mousePos)
+                this.arrowLoaded = true
+                this.showAimLine(mousePos)
             }
             else{
                 this.setLine()
+                if(this.arrowLoaded){
+                    this.shoot(mousePos)
+                    this.arrowLoaded = false
+                }
             }
         }
 
-        /*public update(){
+        public update(){
             this.move()
             this.checkMouseLeftClick()
-        }*/
+        }
 
         private setLine(start : Phaser.Math.Vector2 = null, end : Phaser.Math.Vector2 = null){
             this.aimLine.destroy()

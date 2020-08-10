@@ -38,8 +38,9 @@ namespace GreedyArcher {
         }
 
         public update(time : number, delta : number){
-            this.player.move()
-            this.player.checkMouseLeftClick()
+            //this.player.move()
+            //this.player.checkMouseLeftClick()
+            this.player.update()
             this.projectiles.preUpdate(time, delta)
             
         }
