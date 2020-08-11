@@ -28,17 +28,19 @@ namespace GreedyArcher {
         public create() {
             super.create()
             
-            //this.obstacles.add(new Obstacle(this, 150, 150), true)
-            //this.obstacles.add(new Obstacle(this, 120, 150), true)
             this.obstacles.addObject(new Obstacle(this, 150, 150))
             this.obstacles.addObject(new Obstacle(this, 120, 150))
-            //this.physics.add.collider(this.projectiles, this.obstacles)
-            this.enemy1  = new Enemy(this, 100, -200, this.player)
-            this.enemy2 = new Enemy(this, -300, 250, this.player, false)
+            
+            this.enemy1  = new Enemy(this, 100, -200, this.player, this.obstacles)
+            this.enemy2 = new Enemy(this, -300, 250, this.player, this.obstacles, false)
 
             let scene = this
-            this.physics.add.collider(this.enemy1, this.projectiles, function(){scene.enemy1.gotHit()})
-            this.physics.add.collider(this.enemy2, this.projectiles, function(){scene.enemy2.gotHit()})
+            this.physics.add.collider(this.enemy1, this.obstacles, function(){scene.enemy1.gotHit(true)})
+            this.physics.add.collider(this.enemy2, this.obstacles, function(){scene.enemy2.gotHit(true)})
+            this.physics.add.collider(this.enemy1, this.projectiles, function(){scene.enemy1.gotHit(false, scene.projectiles)})
+            this.physics.add.collider(this.enemy2, this.projectiles, function(){scene.enemy2.gotHit(false, scene.projectiles)})
+            this.physics.add.collider(this.enemy1, this.player, function(){scene.player.gotHit()})
+            this.physics.add.collider(this.enemy2, this.player, function(){scene.player.gotHit()})
 
             this.enemy1.loadAnims()
         }

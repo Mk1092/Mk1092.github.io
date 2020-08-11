@@ -23,8 +23,9 @@ namespace GreedyArcher {
             this.player = new Player(this, 0, 0, this.projectiles)
             this.player.loadAnims()
             
-            //this.obstacles = this.physics.add.group()
+            let scene = this
             this.obstacles = new ObstacleGroup(this)
+            this.physics.add.collider(this.player, this.obstacles, function(){console.log("hit"); scene.player.gotHit()})
             this.physics.add.collider(this.projectiles, this.obstacles)
             this.physics.add.collider(this.obstacles, this.obstacles)
         }
@@ -60,11 +61,8 @@ namespace GreedyArcher {
                 this.debugText.setText(message)
         }
 
-        /*public addProjectile(projectile : Projectile){
-            let vel = projectile.body.velocity
-            console.log(vel)
-            this.projectiles.add(projectile, true)
-            projectile.setVelocity(vel.x, vel.y)
-        }*/
+        public gameOver(){
+            this.scene.start("gameOver")
+        }
     }
 }

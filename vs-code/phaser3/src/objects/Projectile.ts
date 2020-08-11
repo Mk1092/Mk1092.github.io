@@ -37,6 +37,12 @@ namespace GreedyArcher{
             this.setAngle(angle)
         }
 
+        public onHit(){
+            this.body.reset(1000, 1000)
+            this.setActive(false);
+            this.setVisible(false);
+        }
+
         update(time, delta){
             if(this.body.velocity.length() < 20){
                 if(this.stopTime === null){
@@ -44,8 +50,7 @@ namespace GreedyArcher{
                 }
                 else{
                     if(time > this.stopTime + Projectile.stillLifetime){
-                        this.setActive(false);
-                        this.setVisible(false);
+                        this.onHit()
                     }
                 }
             }

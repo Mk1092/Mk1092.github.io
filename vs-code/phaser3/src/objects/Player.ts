@@ -95,6 +95,10 @@ namespace GreedyArcher{
             }
         }
 
+        public gotHit(){
+            this.scene.scene.start("Welcome")
+        }
+
         public loadAnims(){
             this.scene.anims.create({
                 key: 'still',

@@ -15,7 +15,6 @@ namespace GreedyArcher {
         }
 
         create() {
-
             //Canvas dims
             let { width, height } = this.sys.game.canvas
 
@@ -40,9 +39,9 @@ namespace GreedyArcher {
 
             setSizeblePos(50, 45, text, width, height)
 
-            var ctx = this
+            var scene = this
             var keyObj = this.input.keyboard.addKey('Enter')
-            keyObj.on('down', function(event) {ctx.scene.start("Level1")});
+            keyObj.on('down', function(event) {scene.scene.start("Level1")});
         }
     }
 }
