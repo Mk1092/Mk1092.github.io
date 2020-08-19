@@ -19,10 +19,13 @@ namespace GreedyArcher {
             // focus on 0, 0
             this.setView();
 
+            // background color
+            this.cameras.main.backgroundColor = Phaser.Display.Color.ValueToColor(0x8080f0);
+
             this.bg = this.add.tileSprite(0, 0, 800, 600, 'bg');
 
             this.projectiles = new ProjectileGroup(this)
-            this.player = new Player(this, 0, 0, this.projectiles)
+            this.player = new Player(this, 0, 0)
             this.player.loadAnims()
 
             this.obstacles = new ObstacleGroup(this)
@@ -32,15 +35,24 @@ namespace GreedyArcher {
             this.enemies = new EnemyGroup(this)
             Enemy.loadAnims(this)
 
-            /*let scene = this
-            this.obstacles = new ObstacleGroup(this)
-            this.physics.add.collider(this.player, this.obstacles, function(){console.log("hit"); scene.player.gotHit()})
-            this.physics.add.collider(this.projectiles, this.obstacles)
-            this.physics.add.collider(this.obstacles, this.obstacles)*/
+            //this.enemies.createEnemy(100, -200)
+            //this.enemies.createEnemy(-300, 250, false)
             
-            this.physics.add.collider(this.player, this.obstacles, function(player : Player, obstacle : Obstacle){console.log("hit"); player.gotHit()})
+            this.physics.add.collider(this.player, this.obstacles, 
+                function(player : Player, obstacle : Obstacle){player.gotHit()})
+
             this.physics.add.collider(this.projectiles, this.obstacles)
+            
             this.physics.add.collider(this.obstacles, this.obstacles)
+
+            this.physics.add.collider(this.enemies, this.obstacles, 
+                function(enemy : Enemy, obstacle : Obstacle){enemy.hitByDanger()})
+
+            this.physics.add.collider(this.enemies, this.projectiles, 
+                function(enemy : Enemy, projectile : Projectile){enemy.hitByProjectile(); projectile.onHit()})
+
+            this.physics.add.collider(this.enemies, this.player, 
+                function(player : Player, enemy : Enemy){player.gotHit()})
         }
 
         public update(time : number, delta : number){

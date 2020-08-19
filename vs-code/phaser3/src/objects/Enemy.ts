@@ -14,16 +14,12 @@ namespace GreedyArcher {
 
         hitNumber = 0
 
-        constructor(scene : BaseScene, x : number, y : number, mimic : boolean = true){
+        constructor(scene : BaseScene, x : number, y : number, mimic : boolean = true) {
             super(scene, x, y, mimic ? "player" : "enemy")
 
-            this.scene = scene
             this.player = scene.player
             this.obstacles = scene.obstacles
             this.mimic = mimic
-
-            scene.physics.add.existing(this)
-            scene.add.existing(this)
         }
 
         public static loadAnims(scene : Phaser.Scene){
@@ -94,14 +90,13 @@ namespace GreedyArcher {
             
             this.animateMovement()
                 
-            if(this.hitNumber > 0){
+            if(this.hitNumber > 0)
                 return
-            }
 
-            let dangerDir = this.getNearestDangerDirection()
-            if(dangerDir.length() < this.minDangerDistance){
-                dangerDir.normalize().scale(this.runningSpeed)
-                this.setVelocity(dangerDir.x, dangerDir.y)
+            let escapeDir = this.getNearestDangerDirection()
+            if(escapeDir.length() < this.minDangerDistance){
+                escapeDir.normalize().scale(this.runningSpeed)
+                this.setVelocity(escapeDir.x, escapeDir.y)
                 return
             }
 
@@ -121,7 +116,9 @@ namespace GreedyArcher {
         }
 
         public createEnemy(x : number, y : number, mimic? : boolean){
-            this.add(new Enemy(<BaseScene>this.scene, x, y, mimic))
+            let enemy = new Enemy(<BaseScene>this.scene, x, y, mimic)
+            super.add(enemy, true)
+            enemy.setCollideWorldBounds(true)
         }
     }
 }

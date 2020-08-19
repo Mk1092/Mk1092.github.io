@@ -48,8 +48,10 @@ var GreedyArcher;
                         height: 600
                     }
                 },
-                width: 800,
-                height: 600,
+                //width: 800,
+                //height: 600,
+                width: 1000,
+                height: 800,
                 title: "Maintainable Game",
             }) || this;
             // states
@@ -86,12 +88,9 @@ var GreedyArcher;
             _this.runningSpeed = 120;
             _this.isMoving = false;
             _this.hitNumber = 0;
-            _this.scene = scene;
             _this.player = scene.player;
             _this.obstacles = scene.obstacles;
             _this.mimic = mimic;
-            scene.physics.add.existing(_this);
-            scene.add.existing(_this);
             return _this;
         }
         Enemy.loadAnims = function (scene) {
@@ -152,13 +151,12 @@ var GreedyArcher;
         };
         Enemy.prototype.update = function () {
             this.animateMovement();
-            if (this.hitNumber > 0) {
+            if (this.hitNumber > 0)
                 return;
-            }
-            var dangerDir = this.getNearestDangerDirection();
-            if (dangerDir.length() < this.minDangerDistance) {
-                dangerDir.normalize().scale(this.runningSpeed);
-                this.setVelocity(dangerDir.x, dangerDir.y);
+            var escapeDir = this.getNearestDangerDirection();
+            if (escapeDir.length() < this.minDangerDistance) {
+                escapeDir.normalize().scale(this.runningSpeed);
+                this.setVelocity(escapeDir.x, escapeDir.y);
                 return;
             }
             var playerDistance = this.player.body.position.clone();
@@ -177,7 +175,9 @@ var GreedyArcher;
             return _this;
         }
         EnemyGroup.prototype.createEnemy = function (x, y, mimic) {
-            this.add(new Enemy(this.scene, x, y, mimic));
+            var enemy = new Enemy(this.scene, x, y, mimic);
+            _super.prototype.add.call(this, enemy, true);
+            enemy.setCollideWorldBounds(true);
         };
         return EnemyGroup;
     }(Phaser.Physics.Arcade.Group));
@@ -192,8 +192,6 @@ var GreedyArcher;
             _this.setScale(2, 2);
             return _this;
         }
-        Obstacle.dFactor = 1;
-        Obstacle.bounce = 1;
         return Obstacle;
     }(Phaser.Physics.Arcade.Image));
     GreedyArcher.Obstacle = Obstacle;
@@ -206,10 +204,11 @@ var GreedyArcher;
             _super.prototype.add.call(this, child, true);
             child.setCollideWorldBounds(true);
             child.setDamping(true);
-            child.setDrag(Obstacle.dFactor);
-            child.setBounce(Obstacle.bounce);
-            //child.setCircle(child.width/2)
+            child.setDrag(ObstacleGroup.dFactor);
+            child.setBounce(ObstacleGroup.bounce);
         };
+        ObstacleGroup.dFactor = 0.999;
+        ObstacleGroup.bounce = 1;
         return ObstacleGroup;
     }(Phaser.Physics.Arcade.Group));
     GreedyArcher.ObstacleGroup = ObstacleGroup;
@@ -219,7 +218,7 @@ var GreedyArcher;
     var Player = /** @class */ (function (_super) {
         __extends(Player, _super);
         /*--------------------------------------------------------------------*/
-        function Player(scene, x, y, projectiles) {
+        function Player(scene, x, y) {
             var _this = _super.call(this, scene, x, y, "player") || this;
             _this.direction = { x: 0, y: 0 };
             _this.isMoving = false;
@@ -229,8 +228,8 @@ var GreedyArcher;
             _this.arrowLoaded = false;
             scene.physics.add.existing(_this);
             scene.add.existing(_this);
-            _this.baseScene = scene;
-            _this.projectiles = projectiles;
+            //this.baseScene = scene
+            _this.projectiles = scene.projectiles;
             _this.setCollideWorldBounds(true);
             _this.addMovementKey('W', 0, -1);
             _this.addMovementKey('A', -1, 0);
@@ -240,11 +239,7 @@ var GreedyArcher;
             scene.setDebugText("Personaggio");
             _this.addDownKeyCommand('Space', function () {
                 player.playerAim = !player.playerAim;
-                if (player.playerAim)
-                    scene.setDebugText("Personaggio");
-                else {
-                    scene.setDebugText("Centro");
-                }
+                scene.setDebugText(player.playerAim ? "Personaggio" : "Centro");
             });
             _this.aimLine = _this.scene.add.line(0, 0, 0, 0, 0, 0, 0xff0000).setOrigin(0, 0);
             return _this;
@@ -270,13 +265,7 @@ var GreedyArcher;
                 this.setLine();
                 return;
             }
-            var aim;
-            if (this.playerAim) {
-                aim = this.body.center;
-            }
-            else {
-                aim = new Phaser.Math.Vector2(0, 0);
-            }
+            var aim = this.playerAim ? this.body.center : new Phaser.Math.Vector2(0, 0);
             this.setLine(mousePos, aim);
         };
         Player.prototype.shoot = function (mousePos) {
@@ -361,41 +350,36 @@ var GreedyArcher;
         function Projectile(scene) {
             var _this = _super.call(this, scene, 0, 0, "projectile") || this;
             _this.stopTime = null;
-            scene.physics.add.existing(_this);
-            scene.add.existing(_this);
-            _this.setCircle(_this.body.width / 2);
             return _this;
+            /*scene.physics.add.existing(this)
+            scene.add.existing(this)
+
+            this.setCircle(this.body.width/2)*/
         }
-        Projectile.prototype.getClassName = function () {
-            return Projectile.getClassName();
-        };
-        Projectile.getClassName = function () {
-            return "Projectile";
-        };
         Projectile.prototype.fire = function (position, mousePos, playerAim) {
             if (playerAim === void 0) { playerAim = true; }
             this.body.reset(position.x, position.y);
             this.setActive(true);
             this.setVisible(true);
+            this.setCollideWorldBounds(true);
             var vel = mousePos.clone();
             vel.negate();
             if (playerAim) {
                 vel.add(position);
             }
             this.setVelocity(vel.x * Projectile.vFactor, vel.y * Projectile.vFactor);
-            this.setDamping(true);
-            this.setDrag(Projectile.dFactor);
-            var angle = Phaser.Math.Angle.Between(0, 0, vel.x, vel.y);
-            angle = angle * 180 / 3.14 + 90;
-            this.setAngle(angle);
+            //this.setDamping(true)
+            //this.setDrag(Projectile.dFactor)
         };
         Projectile.prototype.onHit = function () {
+            this.setCollideWorldBounds(false);
             this.body.reset(1000, 1000);
             this.setActive(false);
             this.setVisible(false);
         };
         Projectile.prototype.update = function (time, delta) {
-            if (this.body.velocity.length() < 20) {
+            var vel = this.body.velocity;
+            if (vel.length() < 20) {
                 if (this.stopTime === null) {
                     this.stopTime = time;
                 }
@@ -405,9 +389,11 @@ var GreedyArcher;
                     }
                 }
             }
+            var angle = Phaser.Math.Angle.Between(0, 0, vel.x, vel.y);
+            angle = angle * 180 / 3.14 + 90;
+            this.setAngle(angle);
         };
         Projectile.vFactor = 1.8;
-        Projectile.dFactor = 0.98;
         Projectile.stillLifetime = 2000;
         return Projectile;
     }(Phaser.Physics.Arcade.Image));
@@ -425,6 +411,15 @@ var GreedyArcher;
                 classType: Projectile
             });
             _this.runChildUpdate = true;
+            var projectiles = _this.getChildren();
+            for (var _i = 0, projectiles_1 = projectiles; _i < projectiles_1.length; _i++) {
+                var gameobject = projectiles_1[_i];
+                var projectile = gameobject;
+                projectile.setCircle(projectile.body.width / 2);
+                projectile.setDamping(true);
+                projectile.setDrag(ProjectileGroup.dFactor);
+                projectile.setBounce(ProjectileGroup.bounce);
+            }
             return _this;
         }
         ProjectileGroup.prototype.fire = function (position, mousePos, playerAim) {
@@ -433,6 +428,8 @@ var GreedyArcher;
                 projectile.fire(position, mousePos, playerAim);
             }
         };
+        ProjectileGroup.dFactor = 0.98;
+        ProjectileGroup.bounce = 0.7;
         return ProjectileGroup;
     }(Phaser.Physics.Arcade.Group));
     GreedyArcher.ProjectileGroup = ProjectileGroup;
@@ -450,23 +447,25 @@ var GreedyArcher;
             this.debugText.depth = 2;
             // focus on 0, 0
             this.setView();
+            // background color
+            this.cameras.main.backgroundColor = Phaser.Display.Color.ValueToColor(0x8080f0);
             this.bg = this.add.tileSprite(0, 0, 800, 600, 'bg');
             this.projectiles = new GreedyArcher.ProjectileGroup(this);
-            this.player = new GreedyArcher.Player(this, 0, 0, this.projectiles);
+            this.player = new GreedyArcher.Player(this, 0, 0);
             this.player.loadAnims();
             this.obstacles = new GreedyArcher.ObstacleGroup(this);
             /*this.enemies = new Phaser.Physics.Arcade.Group(this.physics.world, this)
             this.enemies.runChildUpdate = true*/
             this.enemies = new GreedyArcher.EnemyGroup(this);
             GreedyArcher.Enemy.loadAnims(this);
-            /*let scene = this
-            this.obstacles = new ObstacleGroup(this)
-            this.physics.add.collider(this.player, this.obstacles, function(){console.log("hit"); scene.player.gotHit()})
-            this.physics.add.collider(this.projectiles, this.obstacles)
-            this.physics.add.collider(this.obstacles, this.obstacles)*/
-            this.physics.add.collider(this.player, this.obstacles, function (player, obstacle) { console.log("hit"); player.gotHit(); });
+            //this.enemies.createEnemy(100, -200)
+            //this.enemies.createEnemy(-300, 250, false)
+            this.physics.add.collider(this.player, this.obstacles, function (player, obstacle) { player.gotHit(); });
             this.physics.add.collider(this.projectiles, this.obstacles);
             this.physics.add.collider(this.obstacles, this.obstacles);
+            this.physics.add.collider(this.enemies, this.obstacles, function (enemy, obstacle) { enemy.hitByDanger(); });
+            this.physics.add.collider(this.enemies, this.projectiles, function (enemy, projectile) { enemy.hitByProjectile(); projectile.onHit(); });
+            this.physics.add.collider(this.enemies, this.player, function (player, enemy) { player.gotHit(); });
         };
         BaseScene.prototype.update = function (time, delta) {
             this.player.update();
@@ -524,15 +523,6 @@ var GreedyArcher;
         function Level1() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        //enemy1 : Enemy
-        //enemy2 : Enemy
-        // -------------------------------------------------------------------------
-        /*constructor(){
-            super({
-                key: "level1",
-                //plugins: ["TweenManager"]
-            })
-        }*/
         Level1.prototype.preload = function () {
             this.load.image('bg', './assets/pavement3.png');
             this.load.image('obstacle', './assets/bomb.png');
@@ -544,22 +534,8 @@ var GreedyArcher;
             _super.prototype.create.call(this);
             this.obstacles.addObject(new GreedyArcher.Obstacle(this, 150, 150));
             this.obstacles.addObject(new GreedyArcher.Obstacle(this, 120, 150));
-            /*this.enemies.add(new Enemy(this, 100, -200, this.player, this.obstacles))
-            this.enemies.add(new Enemy(this, -300, 250, this.player, this.obstacles, false))*/
             this.enemies.createEnemy(100, -200);
             this.enemies.createEnemy(-300, 250, false);
-            /*let scene = this
-            this.physics.add.collider(this.enemy1, this.obstacles, function(enemy : Enemy, obstacle : Obstacle){scene.enemy1.gotHit(obstacle)})
-            this.physics.add.collider(this.enemy2, this.obstacles, function(enemy : Enemy, obstacle : Obstacle){scene.enemy2.gotHit(obstacle)})
-            this.physics.add.collider(this.enemy1, this.projectiles, function(enemy : Enemy, projectile : Projectile){scene.enemy1.gotHit(projectile)})
-            this.physics.add.collider(this.enemy2, this.projectiles, function(enemy : Enemy, projectile : Projectile){scene.enemy2.gotHit(projectile)})
-            this.physics.add.collider(this.enemy1, this.player, function(){scene.player.gotHit()})
-            this.physics.add.collider(this.enemy2, this.player, function(){scene.player.gotHit()})*/
-            this.physics.add.collider(this.enemies, this.obstacles, function (enemy, obstacle) { enemy.hitByDanger(); });
-            this.physics.add.collider(this.enemies, this.projectiles, function (enemy, projectile) { enemy.hitByProjectile(); projectile.onHit(); });
-            this.physics.add.collider(this.enemies, this.player, function (player, enemy) { player.gotHit(); });
-            //this.enemy1.loadAnims()
-            //this.enemies.getFirst().loadAnims()
         };
         return Level1;
     }(GreedyArcher.BaseScene));

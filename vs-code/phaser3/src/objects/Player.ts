@@ -1,8 +1,8 @@
 namespace GreedyArcher{
 
-    export class Player extends Phaser.Physics.Arcade.Sprite{
+    export class Player extends Phaser.Physics.Arcade.Sprite {
 
-        baseScene : BaseScene
+        //baseScene : BaseScene
         projectiles : ProjectileGroup
 
         static speed : number = 200;
@@ -18,15 +18,15 @@ namespace GreedyArcher{
 
         /*--------------------------------------------------------------------*/
 
-        constructor(scene : BaseScene, x : number, y:number, projectiles : ProjectileGroup){
+        constructor(scene : BaseScene, x : number, y:number) {
             super(scene, x, y, "player")
 
             scene.physics.add.existing(this)
             scene.add.existing(this)
 
-            this.baseScene = scene
+            //this.baseScene = scene
 
-            this.projectiles = projectiles
+            this.projectiles = scene.projectiles
 
             this.setCollideWorldBounds(true)
 
@@ -39,11 +39,9 @@ namespace GreedyArcher{
             scene.setDebugText("Personaggio")
             this.addDownKeyCommand('Space', function() {
                 player.playerAim = !player.playerAim
-                if(player.playerAim)
-                    scene.setDebugText("Personaggio")
-                else{
-                    scene.setDebugText("Centro")
-                }
+
+                scene.setDebugText(player.playerAim ? "Personaggio" : "Centro")
+
             })
 
             this.aimLine = this.scene.add.line(0, 0, 0, 0, 0, 0, 0xff0000).setOrigin(0, 0)
@@ -76,14 +74,7 @@ namespace GreedyArcher{
                 return
             }
 
-            let aim : Phaser.Math.Vector2
-            if(this.playerAim){
-                aim = this.body.center
-            }
-            else{
-                aim = new Phaser.Math.Vector2(0, 0)
-            }
-
+            let aim : Phaser.Math.Vector2 = this.playerAim ? this.body.center : new Phaser.Math.Vector2(0, 0)
             this.setLine(mousePos, aim)
         }
 
@@ -127,14 +118,12 @@ namespace GreedyArcher{
                     this.scene.anims.play('walk', this)
                     this.isMoving = true
                 }
-                
             }
             else{
                 if(this.isMoving){
                     this.scene.anims.play('still', this)
                     this.isMoving = false;
                 }
-                
             }
         }
 
