@@ -3,7 +3,7 @@
 
 namespace GreedyArcher {
 
-    export class Welcome extends BaseScene {
+    export class Welcome extends Phaser.Scene {
         logo: Phaser.GameObjects.Image;
 
         constructor() {
@@ -18,7 +18,7 @@ namespace GreedyArcher {
             //Canvas dims
             let { width, height } = this.sys.game.canvas
 
-            // bacground color
+            // background color
             this.cameras.main.backgroundColor = Phaser.Display.Color.ValueToColor(0x8080f0);
 
             this.logo = this.add.image(width/2, height/2, 'logo');

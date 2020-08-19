@@ -1,43 +1,42 @@
 namespace GreedyArcher {
     export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
-        player : Player
-        obstacles : ObstacleGroup
+        private player : Player
+        private obstacles : ObstacleGroup
 
-        mimic : boolean
+        private mimic : boolean
 
-        minDistanceAllowed = 100
-        walkingSpeed = 50
-        runningSpeed = 120
+        private minDangerDistance = 100
+        private walkingSpeed = 50
+        private runningSpeed = 120
 
-        isMoving = false
+        private isMoving = false
 
         hitNumber = 0
-        destroyed = false
 
-        constructor(scene : BaseScene, x : number, y:number, player : Player, obstacles : ObstacleGroup, mimic : boolean = true){
+        constructor(scene : BaseScene, x : number, y : number, mimic : boolean = true){
             super(scene, x, y, mimic ? "player" : "enemy")
 
             this.scene = scene
-            this.player = player
-            this.obstacles = obstacles
+            this.player = scene.player
+            this.obstacles = scene.obstacles
             this.mimic = mimic
 
             scene.physics.add.existing(this)
             scene.add.existing(this)
         }
 
-        public loadAnims(){
-            this.scene.anims.create({
+        public static loadAnims(scene : Phaser.Scene){
+            scene.anims.create({
                 key: 'enemyStill',
-                frames: this.scene.anims.generateFrameNumbers('enemy', {start: 0}),
+                frames: scene.anims.generateFrameNumbers('enemy', {start: 0}),
                 frameRate: 0,
                 repeat: -1
             });
 
-            this.scene.anims.create({
+            scene.anims.create({
                 key: 'enemyWalk',
-                frames: this.scene.anims.generateFrameNumbers('enemy', { start: 1, end: 2}),
+                frames: scene.anims.generateFrameNumbers('enemy', { start: 1, end: 2}),
                 frameRate: 10,
                 repeat: -1
             });
@@ -60,54 +59,27 @@ namespace GreedyArcher {
             }
         }
 
-        public gotHit(destroy : boolean, projectiles ? : ProjectileGroup){
-
-            if(projectiles){
-                let projectile = this.getNearestProjectile(projectiles)
-                projectile.onHit()
-            }
-
-            if(destroy){
-                this.destroyed = true
-                this.body.reset(1000, 1000)
-                this.setActive(false);
-                this.setVisible(false);
-                return
-            }
-
+        public hitByProjectile(){
             this.hitNumber += 1
-            let enemy = this
             var timer = this.scene.time.addEvent({
                 delay: 500,                // ms
-                callback: function(){enemy.hitNumber -= 1},
+                callback: function(){this.hitNumber -= 1},
                 //args: [],
-                //callbackScope: thisArg,
+                callbackScope: this,
                 loop: false
-            });
-        }
-
-        private getNearestProjectile(projectiles : ProjectileGroup) : Projectile {
-            let distance = 10000
-            let pos = this.body.position
-            let projectile : Projectile = null
-
-            projectiles.children.each(function(proj : Projectile){
-                let newDist = proj.body.position.clone().subtract(pos).length()
-                if(newDist < distance){
-                    distance = newDist
-                    projectile = proj
-                }
             })
-
-            return projectile
         }
 
-        private static getNearestDangerDirection(enemy : Enemy) : Phaser.Math.Vector2 {
+        public hitByDanger(){
+            this.destroy()
+        }
+
+        private getNearestDangerDirection() : Phaser.Math.Vector2 {
             let distance = 10000
             let dir = new Phaser.Math.Vector2(0, 0)
             
-            enemy.obstacles.children.each(function(obstacle : Obstacle) {
-                let newDir = enemy.body.position.clone().subtract(obstacle.body.position)
+            this.obstacles.children.each(function(obstacle : Obstacle) {
+                let newDir = this.body.position.clone().subtract(obstacle.body.position)
                 let newDist = newDir.length()
                 if(newDist < distance){
                     distance = newDist
@@ -119,10 +91,6 @@ namespace GreedyArcher {
         }
 
         public update(){
-
-            if(this.destroyed){
-                return
-            }
             
             this.animateMovement()
                 
@@ -130,8 +98,8 @@ namespace GreedyArcher {
                 return
             }
 
-            let dangerDir = Enemy.getNearestDangerDirection(this)
-            if(dangerDir.length() < this.minDistanceAllowed){
+            let dangerDir = this.getNearestDangerDirection()
+            if(dangerDir.length() < this.minDangerDistance){
                 dangerDir.normalize().scale(this.runningSpeed)
                 this.setVelocity(dangerDir.x, dangerDir.y)
                 return
@@ -143,5 +111,17 @@ namespace GreedyArcher {
             this.setVelocity(vel.x, vel.y)
         }
 
+    }
+
+    export class EnemyGroup extends Phaser.Physics.Arcade.Group{
+
+        constructor(scene : BaseScene){
+            super(scene.physics.world, scene)
+            this.runChildUpdate = true
+        }
+
+        public createEnemy(x : number, y : number, mimic? : boolean){
+            this.add(new Enemy(<BaseScene>this.scene, x, y, mimic))
+        }
     }
 }

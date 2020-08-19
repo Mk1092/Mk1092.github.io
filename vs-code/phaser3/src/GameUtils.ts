@@ -5,7 +5,7 @@ namespace GreedyArcher{
     
         setPosition(x:number, y:number) : void
     }
-    
+
     export function setSizeblePos (xp : number, yp : number, obj : sizable, dimX : number, dimY : number) : void{
             let x = dimX * xp / 100 - obj.width/2
             let y = dimY * yp / 100 - obj.height/2

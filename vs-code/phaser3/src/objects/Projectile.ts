@@ -1,10 +1,10 @@
 namespace GreedyArcher{
 
     export class Projectile extends Phaser.Physics.Arcade.Image{
-        static vFactor = 1.8
-        static dFactor = 0.98
-        static stillLifetime = 2000
-        stopTime : number = null
+        private static vFactor = 1.8
+        private static dFactor = 0.98
+        private static stillLifetime = 2000
+        private stopTime : number = null
 
         constructor(scene : Phaser.Scene){
             super(scene, 0, 0, "projectile")
@@ -13,6 +13,14 @@ namespace GreedyArcher{
             scene.add.existing(this)
 
             this.setCircle(this.body.width/2)
+        }
+
+        getClassName(){
+            return Projectile.getClassName()
+        }
+
+        static getClassName(){
+            return "Projectile"
         }
 
         public fire(position : Phaser.Math.Vector2, mousePos : Phaser.Math.Vector2, playerAim : boolean = true){

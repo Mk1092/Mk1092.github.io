@@ -2,8 +2,10 @@ namespace GreedyArcher {
 
     export class BaseScene extends Phaser.Scene {
         bg : Phaser.GameObjects.TileSprite;
+
         player : Player
-        //obstacles : Phaser.Physics.Arcade.Group
+        enemies : EnemyGroup
+
         obstacles : ObstacleGroup
         projectiles : ProjectileGroup
         debugText : Phaser.GameObjects.Text
@@ -22,23 +24,30 @@ namespace GreedyArcher {
             this.projectiles = new ProjectileGroup(this)
             this.player = new Player(this, 0, 0, this.projectiles)
             this.player.loadAnims()
-            
-            let scene = this
+
+            this.obstacles = new ObstacleGroup(this)
+
+            /*this.enemies = new Phaser.Physics.Arcade.Group(this.physics.world, this)
+            this.enemies.runChildUpdate = true*/
+            this.enemies = new EnemyGroup(this)
+            Enemy.loadAnims(this)
+
+            /*let scene = this
             this.obstacles = new ObstacleGroup(this)
             this.physics.add.collider(this.player, this.obstacles, function(){console.log("hit"); scene.player.gotHit()})
+            this.physics.add.collider(this.projectiles, this.obstacles)
+            this.physics.add.collider(this.obstacles, this.obstacles)*/
+            
+            this.physics.add.collider(this.player, this.obstacles, function(player : Player, obstacle : Obstacle){console.log("hit"); player.gotHit()})
             this.physics.add.collider(this.projectiles, this.obstacles)
             this.physics.add.collider(this.obstacles, this.obstacles)
         }
 
-        /*update(time : number, delta : number){
-            if(this.player)
-                this.player.update()
-
-            if(this.projectiles){
-                console.log("BaseScene update")
-                this.projectiles.preUpdate(time, delta)
-            }
-        }*/
+        public update(time : number, delta : number){
+            this.player.update()
+            this.projectiles.preUpdate(time, delta)
+            this.enemies.preUpdate(time, delta)
+        }
 
         // --------------------------------------------------------------------
         public get gameWidth(): number {

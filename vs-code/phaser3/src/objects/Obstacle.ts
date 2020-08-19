@@ -6,8 +6,8 @@ namespace GreedyArcher{
 
         constructor(scene : BaseScene, x: number, y : number){
             super(scene, x, y, "obstacle")
-            this.setScale(2, 2)
 
+            this.setScale(2, 2)
         }
     }
 
