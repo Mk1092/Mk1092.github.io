@@ -7,11 +7,6 @@ namespace GreedyArcher{
 
         constructor(scene : Phaser.Scene){
             super(scene, 0, 0, "projectile")
-            
-            /*scene.physics.add.existing(this)
-            scene.add.existing(this)
-
-            this.setCircle(this.body.width/2)*/
         }
 
         public fire(position : Phaser.Math.Vector2, mousePos : Phaser.Math.Vector2, playerAim : boolean = true){
@@ -23,14 +18,12 @@ namespace GreedyArcher{
 
             let vel = mousePos.clone()
             vel.negate()
+
             if(playerAim){
                 vel.add(position)
             }
 
             this.setVelocity(vel.x * Projectile.vFactor, vel.y * Projectile.vFactor)
-
-            //this.setDamping(true)
-            //this.setDrag(Projectile.dFactor)
         }
 
         public onHit(){

@@ -1,5 +1,5 @@
 namespace GreedyArcher{
-    export class Obstacle extends Phaser.Physics.Arcade.Image {
+    export class Danger extends Phaser.Physics.Arcade.Image {
 
         constructor(scene : BaseScene, x: number, y : number){
             super(scene, x, y, "obstacle")
@@ -8,7 +8,7 @@ namespace GreedyArcher{
         }
     }
 
-    export class ObstacleGroup extends Phaser.Physics.Arcade.Group {
+    export class ObjectGroup extends Phaser.Physics.Arcade.Group {
 
         private static dFactor = 0.999
         private static bounce = 1
@@ -17,14 +17,26 @@ namespace GreedyArcher{
             super(scene.physics.world, scene)
         }
 
-        addObject(child: Phaser.Physics.Arcade.Image | Phaser.Physics.Arcade.Sprite){
+        createDanger(x : number, y : number){
+            let danger = new Danger(<BaseScene>this.scene, x, y)
+
+            super.add(danger, true)
+
+            danger.setCollideWorldBounds(true)
+
+            danger.setDamping(true)
+            danger.setDrag(ObjectGroup.dFactor)
+            danger.setBounce(ObjectGroup.bounce)
+        }
+
+        /*addObject(child: Phaser.Physics.Arcade.Image | Phaser.Physics.Arcade.Sprite){
             super.add(child, true)
 
             child.setCollideWorldBounds(true)
 
             child.setDamping(true)
-            child.setDrag(ObstacleGroup.dFactor)
-            child.setBounce(ObstacleGroup.bounce)
-        }
+            child.setDrag(ObjectGroup.dFactor)
+            child.setBounce(ObjectGroup.bounce)
+        }*/
     }
 }

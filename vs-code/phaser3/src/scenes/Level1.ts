@@ -17,8 +17,8 @@ namespace GreedyArcher {
         public create() {
             super.create()
             
-            this.obstacles.addObject(new Obstacle(this, 150, 150))
-            this.obstacles.addObject(new Obstacle(this, 120, 150))
+            this.objects.createDanger(150, 150)
+            this.objects.createDanger(120, 150)
 
             this.enemies.createEnemy(100, -200)
             this.enemies.createEnemy(-300, 250, false)

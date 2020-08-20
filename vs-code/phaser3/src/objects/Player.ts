@@ -2,7 +2,6 @@ namespace GreedyArcher{
 
     export class Player extends Phaser.Physics.Arcade.Sprite {
 
-        //baseScene : BaseScene
         projectiles : ProjectileGroup
 
         static speed : number = 200;
@@ -23,8 +22,6 @@ namespace GreedyArcher{
 
             scene.physics.add.existing(this)
             scene.add.existing(this)
-
-            //this.baseScene = scene
 
             this.projectiles = scene.projectiles
 
@@ -90,17 +87,17 @@ namespace GreedyArcher{
             this.scene.scene.start("Welcome")
         }
 
-        public loadAnims(){
-            this.scene.anims.create({
+        public static loadAnims(scene : Phaser.Scene){
+            scene.anims.create({
                 key: 'still',
-                frames: this.scene.anims.generateFrameNumbers('player', {start: 0}),
+                frames: scene.anims.generateFrameNumbers('player', {start: 0}),
                 frameRate: 0,
                 repeat: -1
             });
 
-            this.scene.anims.create({
+            scene.anims.create({
                 key: 'walk',
-                frames: this.scene.anims.generateFrameNumbers('player', { start: 1, end: 2}),
+                frames: scene.anims.generateFrameNumbers('player', { start: 1, end: 2}),
                 frameRate: 10,
                 repeat: -1
             });
@@ -132,6 +129,7 @@ namespace GreedyArcher{
 
             let {width, height} = this.scene.game.canvas
             let center = new Phaser.Math.Vector2(width/2, height/2)
+            //let center = (<BaseScene>this.scene).gameCenterCoords
             let mousePos = this.scene.input.mousePointer.position.clone().subtract(center)
                     
             if(leftDown){

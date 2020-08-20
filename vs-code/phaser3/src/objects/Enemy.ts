@@ -2,7 +2,7 @@ namespace GreedyArcher {
     export class Enemy extends Phaser.Physics.Arcade.Sprite {
 
         private player : Player
-        private obstacles : ObstacleGroup
+        private obstacles : ObjectGroup
 
         private mimic : boolean
 
@@ -18,7 +18,7 @@ namespace GreedyArcher {
             super(scene, x, y, mimic ? "player" : "enemy")
 
             this.player = scene.player
-            this.obstacles = scene.obstacles
+            this.obstacles = scene.objects
             this.mimic = mimic
         }
 
@@ -74,7 +74,7 @@ namespace GreedyArcher {
             let distance = 10000
             let dir = new Phaser.Math.Vector2(0, 0)
             
-            this.obstacles.children.each(function(obstacle : Obstacle) {
+            this.obstacles.children.each(function(obstacle : Danger) {
                 let newDir = this.body.position.clone().subtract(obstacle.body.position)
                 let newDist = newDir.length()
                 if(newDist < distance){
