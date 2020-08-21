@@ -1,8 +1,8 @@
-///<reference path = "BaseScene.ts" />
+////<reference path = "BaseScene.ts" />
 
 namespace GreedyArcher {
 
-    export class Preloader extends BaseScene {
+    export class Preloader extends Phaser.Scene {
 
         // -------------------------------------------------------------------------
         public create(): void {

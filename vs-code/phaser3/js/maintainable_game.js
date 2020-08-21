@@ -56,9 +56,8 @@ var GreedyArcher;
             }) || this;
             // states
             _this.scene.add("Welcome", GreedyArcher.Welcome);
-            _this.scene.add("Level1", GreedyArcher.Level1);
-            _this.scene.add("Preloader", GreedyArcher.Preloader);
             _this.scene.add("Menu", GreedyArcher.Menu);
+            _this.scene.add("Level1", GreedyArcher.Level1);
             // start
             _this.scene.start("Welcome");
             return _this;
@@ -69,12 +68,29 @@ var GreedyArcher;
 })(GreedyArcher || (GreedyArcher = {}));
 var GreedyArcher;
 (function (GreedyArcher) {
-    function setSizeblePos(xp, yp, obj, dimX, dimY) {
-        var x = dimX * xp / 100 - obj.width / 2;
-        var y = dimY * yp / 100 - obj.height / 2;
-        obj.setPosition(x, y);
-    }
-    GreedyArcher.setSizeblePos = setSizeblePos;
+    var GUIUtils = /** @class */ (function () {
+        function GUIUtils() {
+        }
+        GUIUtils.setSizeablePos = function (xp, yp, obj, dimX, dimY) {
+            var x = dimX * xp / 100 - obj.width / 2;
+            var y = dimY * yp / 100 - obj.height / 2;
+            obj.setPosition(x, y);
+        };
+        GUIUtils.setTextProperties = function (text, callBack, shadow) {
+            if (callBack === void 0) { callBack = false; }
+            if (shadow === void 0) { shadow = false; }
+            if (callBack) {
+                text.setInteractive(new Phaser.Geom.Rectangle(0, 0, text.width, text.height), Phaser.Geom.Rectangle.Contains);
+                text.on('pointerdown', callBack);
+            }
+            if (shadow)
+                text.setShadow(3, 3, 'rgba(0,0,0,0.5)', 2);
+        };
+        GUIUtils.bgColor = Phaser.Display.Color.ValueToColor(0x8080f0);
+        GUIUtils.textStile = { font: "bold 24px Arial", fill: "#fff" };
+        return GUIUtils;
+    }());
+    GreedyArcher.GUIUtils = GUIUtils;
 })(GreedyArcher || (GreedyArcher = {}));
 var GreedyArcher;
 (function (GreedyArcher) {
@@ -125,7 +141,7 @@ var GreedyArcher;
         };
         Enemy.prototype.hitByProjectile = function () {
             this.hitNumber += 1;
-            var timer = this.scene.time.addEvent({
+            this.scene.time.addEvent({
                 delay: 500,
                 callback: function () { this.hitNumber -= 1; },
                 //args: [],
@@ -311,7 +327,7 @@ var GreedyArcher;
         };
         Player.prototype.checkMouseLeftClick = function () {
             var leftDown = this.scene.input.mousePointer.leftButtonDown();
-            var _a = this.scene.game.canvas, width = _a.width, height = _a.height;
+            var _a = this.scene.gameRect, width = _a.width, height = _a.height; //.game.canvas
             var center = new Phaser.Math.Vector2(width / 2, height / 2);
             //let center = (<BaseScene>this.scene).gameCenterCoords
             var mousePos = this.scene.input.mousePointer.position.clone().subtract(center);
@@ -431,22 +447,131 @@ var GreedyArcher;
 })(GreedyArcher || (GreedyArcher = {}));
 var GreedyArcher;
 (function (GreedyArcher) {
-    var BaseScene = /** @class */ (function (_super) {
-        __extends(BaseScene, _super);
-        function BaseScene() {
+    var GameOver = /** @class */ (function (_super) {
+        __extends(GameOver, _super);
+        function GameOver() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        BaseScene.prototype.create = function () {
+        return GameOver;
+    }(Phaser.Scene));
+    GreedyArcher.GameOver = GameOver;
+})(GreedyArcher || (GreedyArcher = {}));
+var GreedyArcher;
+(function (GreedyArcher) {
+    var Menu = /** @class */ (function (_super) {
+        __extends(Menu, _super);
+        function Menu() {
+            var _this = _super !== null && _super.apply(this, arguments) || this;
+            _this.numLevels = 1;
+            return _this;
+        }
+        // -------------------------------------------------------------------------
+        Menu.prototype.create = function () {
+            this.cameras.main.backgroundColor = GreedyArcher.GUIUtils.bgColor;
+            var _a = this.sys.game.canvas, width = _a.width, height = _a.height;
+            var _loop_1 = function (i) {
+                var lvNum = "Livello " + (i + 1);
+                var text = this_1.add.text(0, 0, lvNum, GreedyArcher.GUIUtils.textStile);
+                var scene = this_1;
+                GreedyArcher.GUIUtils.setTextProperties(text, function () { scene.selectLevel(i); });
+                GreedyArcher.GUIUtils.setSizeablePos(50, 50 + (10 * i), text, width, height);
+            };
+            var this_1 = this;
+            for (var i = 0; i < 3; i++) {
+                _loop_1(i);
+            }
+        };
+        Menu.prototype.selectLevel = function (levelIndex) {
+            var levelNum = levelIndex + 1;
+            if (levelIndex < this.numLevels) {
+                this.scene.start("Level" + levelNum);
+            }
+            else {
+                console.log("Livello " + levelNum + " in fase di creazione");
+            }
+        };
+        return Menu;
+    }(Phaser.Scene));
+    GreedyArcher.Menu = Menu;
+})(GreedyArcher || (GreedyArcher = {}));
+////<reference path = "BaseScene.ts" />
+var GreedyArcher;
+(function (GreedyArcher) {
+    var Preloader = /** @class */ (function (_super) {
+        __extends(Preloader, _super);
+        function Preloader() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        // -------------------------------------------------------------------------
+        Preloader.prototype.create = function () {
+            console.log("Preloader");
+            this.scene.start("Menu");
+        };
+        return Preloader;
+    }(Phaser.Scene));
+    GreedyArcher.Preloader = Preloader;
+})(GreedyArcher || (GreedyArcher = {}));
+////<reference path = "BaseScene.ts" />
+///<reference path = "../GameUtils.ts" />
+var GreedyArcher;
+(function (GreedyArcher) {
+    var Welcome = /** @class */ (function (_super) {
+        __extends(Welcome, _super);
+        function Welcome() {
+            return _super.call(this, { key: "Welcome" }) || this;
+        }
+        Welcome.prototype.preload = function () {
+            this.load.image('logo', './assets/dude.png');
+        };
+        Welcome.prototype.create = function () {
+            //Canvas dims
+            var _a = this.sys.game.canvas, width = _a.width, height = _a.height;
+            // background color
+            //this.cameras.main.backgroundColor = Phaser.Display.Color.ValueToColor(0x8080f0);
+            this.cameras.main.backgroundColor = GreedyArcher.GUIUtils.bgColor;
+            this.logo = this.add.image(width / 2, height / 2, 'logo');
+            this.logo.setScale(.5, .5);
+            var tween = this.tweens.add({
+                targets: this.logo,
+                scaleX: { value: 1.0, duration: 2000, ease: 'Back.easeInOut' },
+                scaleY: { value: 1.0, duration: 2000, ease: 'Back.easeInOut' },
+                yoyo: true,
+                repeat: -1
+            });
+            var text = this.add.text(0, 0, "Premi invio", GreedyArcher.GUIUtils.textStile);
+            GreedyArcher.GUIUtils.setTextProperties(text, false, true);
+            /*text.setInteractive(new Phaser.Geom.Rectangle(0, 0, text.width, text.height), Phaser.Geom.Rectangle.Contains);
+            text.setShadow(3, 3, 'rgba(0,0,0,0.5)', 2);
+
+            text.on('pointerdown', function () {
+                console.log("hihihi")
+            })*/
+            GreedyArcher.GUIUtils.setSizeablePos(50, 45, text, width, height);
+            var keyObj = this.input.keyboard.addKey('Enter');
+            keyObj.on('down', function (event) { this.scene.start("Menu"); }, this);
+        };
+        return Welcome;
+    }(Phaser.Scene));
+    GreedyArcher.Welcome = Welcome;
+})(GreedyArcher || (GreedyArcher = {}));
+var GreedyArcher;
+(function (GreedyArcher) {
+    var BaseLevel = /** @class */ (function (_super) {
+        __extends(BaseLevel, _super);
+        function BaseLevel() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        BaseLevel.prototype.create = function () {
             this.setView();
             this.initFields();
             this.initAnimsAndCollider();
         };
-        BaseScene.prototype.update = function (time, delta) {
+        BaseLevel.prototype.update = function (time, delta) {
             this.player.update();
             this.projectiles.preUpdate(time, delta);
             this.enemies.preUpdate(time, delta);
         };
-        Object.defineProperty(BaseScene.prototype, "gameRect", {
+        Object.defineProperty(BaseLevel.prototype, "gameRect", {
             /*/ --------------------------------------------------------------------
             public get gameWidth(): number {
                 return this.sys.game.config.width as number;
@@ -470,7 +595,7 @@ var GreedyArcher;
             enumerable: false,
             configurable: true
         });
-        Object.defineProperty(BaseScene.prototype, "worldRect", {
+        Object.defineProperty(BaseLevel.prototype, "worldRect", {
             // --------------------------------------------------------------------
             get: function () {
                 return this.physics.world.bounds;
@@ -479,7 +604,7 @@ var GreedyArcher;
             configurable: true
         });
         // --------------------------------------------------------------------
-        BaseScene.prototype.setView = function () {
+        BaseLevel.prototype.setView = function () {
             var _a = this.gameRect, x = _a.x, y = _a.y;
             // setup debug text
             var style = { font: "bold 18px Arial", fill: "#f44" };
@@ -488,16 +613,17 @@ var GreedyArcher;
             // focus on center
             this.cameras.main.centerOn(0, 0);
             // background color
-            this.cameras.main.backgroundColor = Phaser.Display.Color.ValueToColor(0x8080f0);
+            //this.cameras.main.backgroundColor = Phaser.Display.Color.ValueToColor(0x8080f0);
+            this.cameras.main.backgroundColor = GreedyArcher.GUIUtils.bgColor;
         };
-        BaseScene.prototype.initFields = function () {
+        BaseLevel.prototype.initFields = function () {
             this.bg = this.add.tileSprite(0, 0, 800, 600, 'bg');
             this.projectiles = new GreedyArcher.ProjectileGroup(this);
             this.player = new GreedyArcher.Player(this, 0, 0);
             this.objects = new GreedyArcher.ObjectGroup(this);
             this.enemies = new GreedyArcher.EnemyGroup(this);
         };
-        BaseScene.prototype.initAnimsAndCollider = function () {
+        BaseLevel.prototype.initAnimsAndCollider = function () {
             GreedyArcher.Player.loadAnims(this);
             GreedyArcher.Enemy.loadAnims(this);
             this.physics.add.collider(this.player, this.objects, function (player, obstacle) { player.gotHit(); });
@@ -507,29 +633,18 @@ var GreedyArcher;
             this.physics.add.collider(this.enemies, this.projectiles, function (enemy, projectile) { enemy.hitByProjectile(); projectile.onHit(); });
             this.physics.add.collider(this.enemies, this.player, function (player, enemy) { player.gotHit(); });
         };
-        BaseScene.prototype.setDebugText = function (message) {
+        BaseLevel.prototype.setDebugText = function (message) {
             if (this.debugText)
                 this.debugText.setText(message);
         };
-        BaseScene.prototype.gameOver = function () {
+        BaseLevel.prototype.gameOver = function () {
             this.scene.start("gameOver");
         };
-        return BaseScene;
+        return BaseLevel;
     }(Phaser.Scene));
-    GreedyArcher.BaseScene = BaseScene;
+    GreedyArcher.BaseLevel = BaseLevel;
 })(GreedyArcher || (GreedyArcher = {}));
-var GreedyArcher;
-(function (GreedyArcher) {
-    var GameOver = /** @class */ (function (_super) {
-        __extends(GameOver, _super);
-        function GameOver() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        return GameOver;
-    }(GreedyArcher.BaseScene));
-    GreedyArcher.GameOver = GameOver;
-})(GreedyArcher || (GreedyArcher = {}));
-///<reference path = "BaseScene.ts" />
+///<reference path = "BaseLevel.ts" />
 var GreedyArcher;
 (function (GreedyArcher) {
     var Level1 = /** @class */ (function (_super) {
@@ -552,86 +667,7 @@ var GreedyArcher;
             this.enemies.createEnemy(-300, 250, false);
         };
         return Level1;
-    }(GreedyArcher.BaseScene));
+    }(GreedyArcher.BaseLevel));
     GreedyArcher.Level1 = Level1;
-})(GreedyArcher || (GreedyArcher = {}));
-///<reference path = "BaseScene.ts" />
-var GreedyArcher;
-(function (GreedyArcher) {
-    var Menu = /** @class */ (function (_super) {
-        __extends(Menu, _super);
-        function Menu() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        // -------------------------------------------------------------------------
-        Menu.prototype.create = function () {
-            console.log("Menu");
-            // bacground color
-            this.cameras.main.backgroundColor = Phaser.Display.Color.ValueToColor(0x808080);
-            // focus on 0, 0
-            this.setView();
-            // red circle
-            var graphics = this.add.graphics();
-            graphics.fillStyle(0xff0000);
-            graphics.fillCircle(0, 0, 50);
-        };
-        return Menu;
-    }(GreedyArcher.BaseScene));
-    GreedyArcher.Menu = Menu;
-})(GreedyArcher || (GreedyArcher = {}));
-///<reference path = "BaseScene.ts" />
-var GreedyArcher;
-(function (GreedyArcher) {
-    var Preloader = /** @class */ (function (_super) {
-        __extends(Preloader, _super);
-        function Preloader() {
-            return _super !== null && _super.apply(this, arguments) || this;
-        }
-        // -------------------------------------------------------------------------
-        Preloader.prototype.create = function () {
-            console.log("Preloader");
-            this.scene.start("Menu");
-        };
-        return Preloader;
-    }(GreedyArcher.BaseScene));
-    GreedyArcher.Preloader = Preloader;
-})(GreedyArcher || (GreedyArcher = {}));
-///<reference path = "BaseScene.ts" />
-///<reference path = "../GameUtils.ts" />
-var GreedyArcher;
-(function (GreedyArcher) {
-    var Welcome = /** @class */ (function (_super) {
-        __extends(Welcome, _super);
-        function Welcome() {
-            return _super.call(this, { key: "Welcome" }) || this;
-        }
-        Welcome.prototype.preload = function () {
-            this.load.image('logo', './assets/dude.png');
-        };
-        Welcome.prototype.create = function () {
-            //Canvas dims
-            var _a = this.sys.game.canvas, width = _a.width, height = _a.height;
-            // background color
-            this.cameras.main.backgroundColor = Phaser.Display.Color.ValueToColor(0x8080f0);
-            this.logo = this.add.image(width / 2, height / 2, 'logo');
-            this.logo.setScale(.5, .5);
-            var tween = this.tweens.add({
-                targets: this.logo,
-                scaleX: { value: 1.0, duration: 2000, ease: 'Back.easeInOut' },
-                scaleY: { value: 1.0, duration: 2000, ease: 'Back.easeInOut' },
-                yoyo: true,
-                repeat: -1
-            });
-            var style = { font: "bold 24px Arial", fill: "#fff" };
-            var text = this.add.text(0, 0, "Premi invio", style);
-            text.setShadow(3, 3, 'rgba(0,0,0,0.5)', 2);
-            GreedyArcher.setSizeblePos(50, 45, text, width, height);
-            var scene = this;
-            var keyObj = this.input.keyboard.addKey('Enter');
-            keyObj.on('down', function (event) { scene.scene.start("Level1"); });
-        };
-        return Welcome;
-    }(Phaser.Scene));
-    GreedyArcher.Welcome = Welcome;
 })(GreedyArcher || (GreedyArcher = {}));
 //# sourceMappingURL=maintainable_game.js.map

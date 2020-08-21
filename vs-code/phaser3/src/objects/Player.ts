@@ -17,7 +17,7 @@ namespace GreedyArcher{
 
         /*--------------------------------------------------------------------*/
 
-        constructor(scene : BaseScene, x : number, y:number) {
+        constructor(scene : BaseLevel, x : number, y:number) {
             super(scene, x, y, "player")
 
             scene.physics.add.existing(this)
@@ -127,7 +127,7 @@ namespace GreedyArcher{
         private checkMouseLeftClick(){
             let leftDown = this.scene.input.mousePointer.leftButtonDown()
 
-            let {width, height} = this.scene.game.canvas
+            let {width, height} = (<BaseLevel>this.scene).gameRect//.game.canvas
             let center = new Phaser.Math.Vector2(width/2, height/2)
             //let center = (<BaseScene>this.scene).gameCenterCoords
             let mousePos = this.scene.input.mousePointer.position.clone().subtract(center)

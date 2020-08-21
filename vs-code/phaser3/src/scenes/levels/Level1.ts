@@ -1,8 +1,8 @@
-///<reference path = "BaseScene.ts" />
+///<reference path = "BaseLevel.ts" />
 
 namespace GreedyArcher {
 
-    export class Level1 extends BaseScene {
+    export class Level1 extends BaseLevel {
 
         preload() {
 

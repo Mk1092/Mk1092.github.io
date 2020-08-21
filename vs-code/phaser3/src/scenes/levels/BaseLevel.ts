@@ -1,6 +1,6 @@
 namespace GreedyArcher {
 
-    export class BaseScene extends Phaser.Scene {
+    export class BaseLevel extends Phaser.Scene {
         bg : Phaser.GameObjects.TileSprite;
 
         player : Player
@@ -59,7 +59,7 @@ namespace GreedyArcher {
             let {x, y} = this.gameRect
 
             // setup debug text
-            var style = { font: "bold 18px Arial", fill: "#f44"};
+            let style = { font: "bold 18px Arial", fill: "#f44"};
             this.debugText = this.add.text(x, y, "", style);
             this.debugText.depth = 2
 
@@ -67,7 +67,8 @@ namespace GreedyArcher {
             this.cameras.main.centerOn(0, 0);
 
             // background color
-            this.cameras.main.backgroundColor = Phaser.Display.Color.ValueToColor(0x8080f0);
+            //this.cameras.main.backgroundColor = Phaser.Display.Color.ValueToColor(0x8080f0);
+            this.cameras.main.backgroundColor = GUIUtils.bgColor
         }
 
         private initFields(){

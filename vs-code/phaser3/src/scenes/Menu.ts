@@ -1,23 +1,35 @@
-///<reference path = "BaseScene.ts" />
-
 namespace GreedyArcher {
 
-    export class Menu extends BaseScene {
+    export class Menu extends Phaser.Scene {
+        private numLevels = 1
 
         // -------------------------------------------------------------------------
         public create(): void {
-            console.log("Menu");
 
-            // bacground color
-            this.cameras.main.backgroundColor = Phaser.Display.Color.ValueToColor(0x808080);
+            this.cameras.main.backgroundColor = GUIUtils.bgColor
 
-            // focus on 0, 0
-            this.setView();
+            let{width, height} = this.sys.game.canvas
 
-            // red circle
-            let graphics = this.add.graphics();
-            graphics.fillStyle(0xff0000);
-            graphics.fillCircle(0, 0, 50);
+            for(let i = 0; i < 3; i++){
+                let lvNum = "Livello " + (i+1)
+                let text = this.add.text(0, 0, lvNum, GUIUtils.textStile)
+                let scene = this
+                GUIUtils.setTextProperties(text, function () {scene.selectLevel(i)})
+                GUIUtils.setSizeablePos(50, 50 + (10 * i), text, width, height)
+            }
+
+        }
+
+        private selectLevel(levelIndex : number){
+            let levelNum = levelIndex + 1
+
+            if(levelIndex < this.numLevels){
+                this.scene.start("Level" + levelNum)
+            }
+            else{
+                console.log("Livello " + levelNum + " in fase di creazione")
+            }
+
         }
     }
 }

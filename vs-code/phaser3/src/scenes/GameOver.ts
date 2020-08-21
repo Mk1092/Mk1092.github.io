@@ -1,5 +1,5 @@
 namespace GreedyArcher {
-    export class GameOver extends BaseScene {
+    export class GameOver extends Phaser.Scene {
         
     }
 }

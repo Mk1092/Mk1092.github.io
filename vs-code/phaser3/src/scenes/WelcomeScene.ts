@@ -1,4 +1,4 @@
-///<reference path = "BaseScene.ts" />
+////<reference path = "BaseScene.ts" />
 ///<reference path = "../GameUtils.ts" />
 
 namespace GreedyArcher {
@@ -19,7 +19,8 @@ namespace GreedyArcher {
             let { width, height } = this.sys.game.canvas
 
             // background color
-            this.cameras.main.backgroundColor = Phaser.Display.Color.ValueToColor(0x8080f0);
+            //this.cameras.main.backgroundColor = Phaser.Display.Color.ValueToColor(0x8080f0);
+            this.cameras.main.backgroundColor = GUIUtils.bgColor
 
             this.logo = this.add.image(width/2, height/2, 'logo');
             this.logo.setScale(.5,.5);
@@ -32,16 +33,21 @@ namespace GreedyArcher {
                 repeat: -1
             });
 
-            var style = { font: "bold 24px Arial", fill: "#fff"};
+            let text = this.add.text(0, 0, "Premi invio", GUIUtils.textStile);
+            
+            GUIUtils.setTextProperties(text, false, true)
 
-            var text = this.add.text(0, 0, "Premi invio", style);
+            /*text.setInteractive(new Phaser.Geom.Rectangle(0, 0, text.width, text.height), Phaser.Geom.Rectangle.Contains);
             text.setShadow(3, 3, 'rgba(0,0,0,0.5)', 2);
 
-            setSizeblePos(50, 45, text, width, height)
+            text.on('pointerdown', function () {
+                console.log("hihihi")
+            })*/
 
-            var scene = this
-            var keyObj = this.input.keyboard.addKey('Enter')
-            keyObj.on('down', function(event) {scene.scene.start("Level1")});
+            GUIUtils.setSizeablePos(50, 45, text, width, height)
+
+            let keyObj = this.input.keyboard.addKey('Enter')
+            keyObj.on('down', function(event) {this.scene.start("Menu")}, this);
         }
     }
 }

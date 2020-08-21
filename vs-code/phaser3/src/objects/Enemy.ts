@@ -14,7 +14,7 @@ namespace GreedyArcher {
 
         hitNumber = 0
 
-        constructor(scene : BaseScene, x : number, y : number, mimic : boolean = true) {
+        constructor(scene : BaseLevel, x : number, y : number, mimic : boolean = true) {
             super(scene, x, y, mimic ? "player" : "enemy")
 
             this.player = scene.player
@@ -57,7 +57,7 @@ namespace GreedyArcher {
 
         public hitByProjectile(){
             this.hitNumber += 1
-            var timer = this.scene.time.addEvent({
+            this.scene.time.addEvent({
                 delay: 500,                // ms
                 callback: function(){this.hitNumber -= 1},
                 //args: [],
@@ -110,13 +110,13 @@ namespace GreedyArcher {
 
     export class EnemyGroup extends Phaser.Physics.Arcade.Group{
 
-        constructor(scene : BaseScene){
+        constructor(scene : BaseLevel){
             super(scene.physics.world, scene)
             this.runChildUpdate = true
         }
 
         public createEnemy(x : number, y : number, mimic? : boolean){
-            let enemy = new Enemy(<BaseScene>this.scene, x, y, mimic)
+            let enemy = new Enemy(<BaseLevel>this.scene, x, y, mimic)
             super.add(enemy, true)
             enemy.setCollideWorldBounds(true)
         }

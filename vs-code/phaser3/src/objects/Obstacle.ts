@@ -1,7 +1,7 @@
 namespace GreedyArcher{
     export class Danger extends Phaser.Physics.Arcade.Image {
 
-        constructor(scene : BaseScene, x: number, y : number){
+        constructor(scene : BaseLevel, x: number, y : number){
             super(scene, x, y, "obstacle")
 
             this.setScale(2, 2)
@@ -18,7 +18,7 @@ namespace GreedyArcher{
         }
 
         createDanger(x : number, y : number){
-            let danger = new Danger(<BaseScene>this.scene, x, y)
+            let danger = new Danger(<BaseLevel>this.scene, x, y)
 
             super.add(danger, true)
 

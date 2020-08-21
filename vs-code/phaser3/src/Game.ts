@@ -39,9 +39,8 @@ namespace GreedyArcher {
 
             // states
             this.scene.add("Welcome", Welcome);
-            this.scene.add("Level1", Level1);
-            this.scene.add("Preloader", Preloader);
             this.scene.add("Menu", Menu);
+            this.scene.add("Level1", Level1);
 
             // start
             this.scene.start("Welcome")
