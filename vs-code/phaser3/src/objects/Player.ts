@@ -4,16 +4,31 @@ namespace GreedyArcher{
 
         projectiles : ProjectileGroup
 
-        static speed : number = 200;
+        // Pg movements
+        static speed = 200;
         direction = {x: 0, y: 0}
-        isMoving : boolean = false
+        isMoving = false
 
+        // Pg fire rate
         lastShot = 0
         static shotInterval = 500
 
-        playerAim = true
+        // Game options
+        playerAim = true  //aim to the center of the screen or to pg?
+        loadByDist = true //arrow power is based on distance or time?
+
+        // aim line object
         aimLine : Phaser.GameObjects.Line = null
+
+        // needed to shoot an arrow on left pointer up
         arrowLoaded = false
+        
+        //needed for space-based arrows loading
+        static maxLoadingSpace = 150
+
+        // needed for time-based arrows loading
+        arrowLoadTime = 0
+        static maxLoadingTime = 3000 //ms
 
         /*--------------------------------------------------------------------*/
 
@@ -41,6 +56,10 @@ namespace GreedyArcher{
 
             })
 
+            this.addDownKeyCommand('P', function(){
+                player.loadByDist = !player.loadByDist
+            })
+
             this.aimLine = this.scene.add.line(0, 0, 0, 0, 0, 0, 0xff0000).setOrigin(0, 0)
         }
 
@@ -64,22 +83,17 @@ namespace GreedyArcher{
             this.direction.y = Math.max(Math.min(this.direction.y, 1), -1)
         }
 
-        private showAimLine(mousePos? : Phaser.Math.Vector2){
-
-            if(!mousePos){
-                this.setLine()
-                return
-            }
-
+        private showAimLine(mousePos : Phaser.Math.Vector2, time : number){
             let aim : Phaser.Math.Vector2 = this.playerAim ? this.body.center : new Phaser.Math.Vector2(0, 0)
-            this.setLine(mousePos, aim)
+            this.setLine(mousePos, aim, time)
         }
 
-        private shoot(mousePos : Phaser.Math.Vector2){
-            let now = new Date().getTime()
-            if(now > this.lastShot + Player.shotInterval){
-                this.projectiles.fire(this.body.center, mousePos, this.playerAim)
-                this.lastShot = now
+        private shoot(mousePos : Phaser.Math.Vector2, time : number){
+            if(time > this.lastShot + Player.shotInterval){
+                let aimLineVec = this.getAimLineVector(mousePos)
+                let arrowLoadRate = this.getArrowLoadRate(aimLineVec.length(), time)
+                this.projectiles.fire(this.body.center, aimLineVec, arrowLoadRate, this.playerAim)
+                this.lastShot = time
             }
         }
 
@@ -124,36 +138,82 @@ namespace GreedyArcher{
             }
         }
 
-        private checkMouseLeftClick(){
+        private checkMouseLeftClick(time : number){
             let leftDown = this.scene.input.mousePointer.leftButtonDown()
 
             let {width, height} = (<BaseLevel>this.scene).gameRect//.game.canvas
             let center = new Phaser.Math.Vector2(width/2, height/2)
-            //let center = (<BaseScene>this.scene).gameCenterCoords
             let mousePos = this.scene.input.mousePointer.position.clone().subtract(center)
-                    
+            
             if(leftDown){
-                this.arrowLoaded = true
-                this.showAimLine(mousePos)
+                if(!this.arrowLoaded){
+                    this.arrowLoaded = true
+                    this.arrowLoadTime = time
+                }
+                
+                this.showAimLine(mousePos, time)
             }
             else{
-                this.setLine()
+                this.removeAimLine()
                 if(this.arrowLoaded){
-                    this.shoot(mousePos)
+                    this.shoot(mousePos, time)
                     this.arrowLoaded = false
                 }
             }
         }
 
-        public update(){
+        public update(time : number, delta : number){
             this.animateMovement()
-            this.checkMouseLeftClick()
+            this.checkMouseLeftClick(time)
         }
 
-        private setLine(start : Phaser.Math.Vector2 = null, end : Phaser.Math.Vector2 = null){
+        private setLine(start : Phaser.Math.Vector2, end : Phaser.Math.Vector2, time : number){
             this.aimLine.destroy()
-            if(start !== null &&  end != null)
-                this.aimLine = this.scene.add.line(0, 0, start.x, start.y, end.x, end.y, 0xff0000).setOrigin(0, 0)
+            
+            let color : number
+
+            let arrowLoadRate = this.getArrowLoadRate(end.clone().subtract(start).length(), time)
+
+            let red = 180 * arrowLoadRate
+            let green = 70 * (1 - arrowLoadRate)
+            let blue = 20 //* arrowLoadRate * (1 - arrowLoadRate)
+
+            color = blue + 256 * (green + 256 * red)
+
+            this.aimLine = this.scene.add.line(0, 0, start.x, start.y, end.x, end.y, color).setOrigin(0, 0)
+            
+       }
+
+        private removeAimLine(){
+           this.aimLine.destroy()
+        }
+
+        private getAimLineVector(mousePos : Phaser.Math.Vector2) : Phaser.Math.Vector2{
+
+            let aimLineVec = mousePos.clone()
+            aimLineVec.negate()
+
+            if(this.playerAim){
+                aimLineVec.add(this.body.position)
+            }
+
+            return aimLineVec
+        }
+
+        private getArrowLoadRate(aimLineLength : number, time : number) : number {
+            let rate : number
+
+            if(this.loadByDist){
+                rate = aimLineLength / Player.maxLoadingSpace
+            }
+            else{
+                let delta = time - this.arrowLoadTime
+                rate = delta / Player.maxLoadingTime
+            }
+
+            let limitedRate = Math.min(rate, 1)
+            limitedRate = Math.max(limitedRate, 0.15)
+            return limitedRate
         }
     }
 

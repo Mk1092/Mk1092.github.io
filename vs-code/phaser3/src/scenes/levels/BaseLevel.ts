@@ -17,7 +17,7 @@ namespace GreedyArcher {
         }
 
         public update(time : number, delta : number){
-            this.player.update()
+            this.player.update(time, delta)
             this.projectiles.preUpdate(time, delta)
             this.enemies.preUpdate(time, delta)
         }

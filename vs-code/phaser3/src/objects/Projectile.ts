@@ -1,7 +1,7 @@
 namespace GreedyArcher{
 
     export class Projectile extends Phaser.Physics.Arcade.Image{
-        private static vFactor = 1.8
+        private static maxVelocity = 1500
         private static stillLifetime = 2000
         private stopTime : number = null
 
@@ -9,21 +9,15 @@ namespace GreedyArcher{
             super(scene, 0, 0, "projectile")
         }
 
-        public fire(position : Phaser.Math.Vector2, mousePos : Phaser.Math.Vector2, playerAim : boolean = true){
+        public fire(position : Phaser.Math.Vector2, dir : Phaser.Math.Vector2, arrowLoadRate : number, playerAim : boolean){
             this.body.reset(position.x, position.y)
 
             this.setActive(true);
             this.setVisible(true);
             this.setCollideWorldBounds(true)
 
-            let vel = mousePos.clone()
-            vel.negate()
-
-            if(playerAim){
-                vel.add(position)
-            }
-
-            this.setVelocity(vel.x * Projectile.vFactor, vel.y * Projectile.vFactor)
+            let vel = dir.normalize().scale(arrowLoadRate * Projectile.maxVelocity)
+            this.setVelocity(vel.x, vel.y)
         }
 
         public onHit(){
@@ -82,11 +76,11 @@ namespace GreedyArcher{
             }
         }
 
-        public fire(position : Phaser.Math.Vector2, mousePos : Phaser.Math.Vector2, playerAim? : boolean){
+        public fire(position : Phaser.Math.Vector2, dir : Phaser.Math.Vector2, arrowLoadRate : number, playerAim : boolean){
             let projectile : Projectile = this.getFirstDead()
 
             if(projectile){
-                projectile.fire(position, mousePos, playerAim)
+                projectile.fire(position, dir, arrowLoadRate, playerAim)
             }
         }
     }

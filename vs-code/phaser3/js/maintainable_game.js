@@ -239,10 +239,17 @@ var GreedyArcher;
             var _this = _super.call(this, scene, x, y, "player") || this;
             _this.direction = { x: 0, y: 0 };
             _this.isMoving = false;
+            // Pg fire rate
             _this.lastShot = 0;
-            _this.playerAim = true;
+            // Game options
+            _this.playerAim = true; //aim to the center of the screen or to pg?
+            _this.loadByDist = true; //arrow power is based on distance or time?
+            // aim line object
             _this.aimLine = null;
+            // needed to shoot an arrow on left pointer up
             _this.arrowLoaded = false;
+            // needed for time-based arrows loading
+            _this.arrowLoadTime = 0;
             scene.physics.add.existing(_this);
             scene.add.existing(_this);
             _this.projectiles = scene.projectiles;
@@ -256,6 +263,9 @@ var GreedyArcher;
             _this.addDownKeyCommand('Space', function () {
                 player.playerAim = !player.playerAim;
                 scene.setDebugText(player.playerAim ? "Personaggio" : "Centro");
+            });
+            _this.addDownKeyCommand('P', function () {
+                player.loadByDist = !player.loadByDist;
             });
             _this.aimLine = _this.scene.add.line(0, 0, 0, 0, 0, 0, 0xff0000).setOrigin(0, 0);
             return _this;
@@ -276,19 +286,16 @@ var GreedyArcher;
             this.direction.x = Math.max(Math.min(this.direction.x, 1), -1);
             this.direction.y = Math.max(Math.min(this.direction.y, 1), -1);
         };
-        Player.prototype.showAimLine = function (mousePos) {
-            if (!mousePos) {
-                this.setLine();
-                return;
-            }
+        Player.prototype.showAimLine = function (mousePos, time) {
             var aim = this.playerAim ? this.body.center : new Phaser.Math.Vector2(0, 0);
-            this.setLine(mousePos, aim);
+            this.setLine(mousePos, aim, time);
         };
-        Player.prototype.shoot = function (mousePos) {
-            var now = new Date().getTime();
-            if (now > this.lastShot + Player.shotInterval) {
-                this.projectiles.fire(this.body.center, mousePos, this.playerAim);
-                this.lastShot = now;
+        Player.prototype.shoot = function (mousePos, time) {
+            if (time > this.lastShot + Player.shotInterval) {
+                var aimLineVec = this.getAimLineVector(mousePos);
+                var arrowLoadRate = this.getArrowLoadRate(aimLineVec.length(), time);
+                this.projectiles.fire(this.body.center, aimLineVec, arrowLoadRate, this.playerAim);
+                this.lastShot = time;
             }
         };
         Player.prototype.gotHit = function () {
@@ -325,37 +332,70 @@ var GreedyArcher;
                 }
             }
         };
-        Player.prototype.checkMouseLeftClick = function () {
+        Player.prototype.checkMouseLeftClick = function (time) {
             var leftDown = this.scene.input.mousePointer.leftButtonDown();
             var _a = this.scene.gameRect, width = _a.width, height = _a.height; //.game.canvas
             var center = new Phaser.Math.Vector2(width / 2, height / 2);
-            //let center = (<BaseScene>this.scene).gameCenterCoords
             var mousePos = this.scene.input.mousePointer.position.clone().subtract(center);
             if (leftDown) {
-                this.arrowLoaded = true;
-                this.showAimLine(mousePos);
+                if (!this.arrowLoaded) {
+                    this.arrowLoaded = true;
+                    this.arrowLoadTime = time;
+                }
+                this.showAimLine(mousePos, time);
             }
             else {
-                this.setLine();
+                this.removeAimLine();
                 if (this.arrowLoaded) {
-                    this.shoot(mousePos);
+                    this.shoot(mousePos, time);
                     this.arrowLoaded = false;
                 }
             }
         };
-        Player.prototype.update = function () {
+        Player.prototype.update = function (time, delta) {
             this.animateMovement();
-            this.checkMouseLeftClick();
+            this.checkMouseLeftClick(time);
         };
-        Player.prototype.setLine = function (start, end) {
-            if (start === void 0) { start = null; }
-            if (end === void 0) { end = null; }
+        Player.prototype.setLine = function (start, end, time) {
             this.aimLine.destroy();
-            if (start !== null && end != null)
-                this.aimLine = this.scene.add.line(0, 0, start.x, start.y, end.x, end.y, 0xff0000).setOrigin(0, 0);
+            var color;
+            var arrowLoadRate = this.getArrowLoadRate(end.clone().subtract(start).length(), time);
+            var red = 180 * arrowLoadRate;
+            var green = 70 * (1 - arrowLoadRate);
+            var blue = 20; //* arrowLoadRate * (1 - arrowLoadRate)
+            color = blue + 256 * (green + 256 * red);
+            this.aimLine = this.scene.add.line(0, 0, start.x, start.y, end.x, end.y, color).setOrigin(0, 0);
         };
+        Player.prototype.removeAimLine = function () {
+            this.aimLine.destroy();
+        };
+        Player.prototype.getAimLineVector = function (mousePos) {
+            var aimLineVec = mousePos.clone();
+            aimLineVec.negate();
+            if (this.playerAim) {
+                aimLineVec.add(this.body.position);
+            }
+            return aimLineVec;
+        };
+        Player.prototype.getArrowLoadRate = function (aimLineLength, time) {
+            var rate;
+            if (this.loadByDist) {
+                rate = aimLineLength / Player.maxLoadingSpace;
+            }
+            else {
+                var delta = time - this.arrowLoadTime;
+                rate = delta / Player.maxLoadingTime;
+            }
+            var limitedRate = Math.min(rate, 1);
+            limitedRate = Math.max(limitedRate, 0.15);
+            return limitedRate;
+        };
+        // Pg movements
         Player.speed = 200;
         Player.shotInterval = 500;
+        //needed for space-based arrows loading
+        Player.maxLoadingSpace = 150;
+        Player.maxLoadingTime = 3000; //ms
         return Player;
     }(Phaser.Physics.Arcade.Sprite));
     GreedyArcher.Player = Player;
@@ -369,18 +409,13 @@ var GreedyArcher;
             _this.stopTime = null;
             return _this;
         }
-        Projectile.prototype.fire = function (position, mousePos, playerAim) {
-            if (playerAim === void 0) { playerAim = true; }
+        Projectile.prototype.fire = function (position, dir, arrowLoadRate, playerAim) {
             this.body.reset(position.x, position.y);
             this.setActive(true);
             this.setVisible(true);
             this.setCollideWorldBounds(true);
-            var vel = mousePos.clone();
-            vel.negate();
-            if (playerAim) {
-                vel.add(position);
-            }
-            this.setVelocity(vel.x * Projectile.vFactor, vel.y * Projectile.vFactor);
+            var vel = dir.normalize().scale(arrowLoadRate * Projectile.maxVelocity);
+            this.setVelocity(vel.x, vel.y);
         };
         Projectile.prototype.onHit = function () {
             this.setCollideWorldBounds(false);
@@ -404,7 +439,7 @@ var GreedyArcher;
             angle = angle * 180 / 3.14 + 90;
             this.setAngle(angle);
         };
-        Projectile.vFactor = 1.8;
+        Projectile.maxVelocity = 1500;
         Projectile.stillLifetime = 2000;
         return Projectile;
     }(Phaser.Physics.Arcade.Image));
@@ -433,10 +468,10 @@ var GreedyArcher;
             }
             return _this;
         }
-        ProjectileGroup.prototype.fire = function (position, mousePos, playerAim) {
+        ProjectileGroup.prototype.fire = function (position, dir, arrowLoadRate, playerAim) {
             var projectile = this.getFirstDead();
             if (projectile) {
-                projectile.fire(position, mousePos, playerAim);
+                projectile.fire(position, dir, arrowLoadRate, playerAim);
             }
         };
         ProjectileGroup.dFactor = 0.98;
@@ -567,7 +602,7 @@ var GreedyArcher;
             this.initAnimsAndCollider();
         };
         BaseLevel.prototype.update = function (time, delta) {
-            this.player.update();
+            this.player.update(time, delta);
             this.projectiles.preUpdate(time, delta);
             this.enemies.preUpdate(time, delta);
         };
