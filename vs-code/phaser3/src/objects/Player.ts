@@ -104,7 +104,11 @@ namespace GreedyArcher{
         }
 
         public gotHit(){
-            this.scene.scene.start("Welcome")
+            this.scene.scene.start(this.scene.scene.key)
+        }
+
+        public foundGoal(){
+            this.scene.scene.start("Menu")
         }
 
         public static loadAnims(scene : Phaser.Scene){
@@ -197,7 +201,7 @@ namespace GreedyArcher{
             aimLineVec.negate()
 
             if(this.playerAim){
-                aimLineVec.add(this.body.position)
+                aimLineVec.add(this.body.center)
             }
 
             return aimLineVec

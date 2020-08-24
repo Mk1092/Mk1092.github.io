@@ -11,7 +11,7 @@ namespace GreedyArcher {
             this.load.image('projectile', './assets/arrow3.png')
             this.load.spritesheet('player', './assets/archerD.png', { frameWidth: 52, frameHeight: 64 })
             this.load.spritesheet('enemy', './assets/omino.png', { frameWidth: 26, frameHeight: 64 })
-            
+            this.load.image('goal', './assets/goal.png')
         }
 
         public create() {
@@ -19,6 +19,7 @@ namespace GreedyArcher {
             
             this.objects.createDanger(150, 150)
             this.objects.createDanger(120, 150)
+            this.objects.createGoal(0, -305)
 
             this.enemies.createEnemy(100, -200)
             this.enemies.createEnemy(-300, 250, false)

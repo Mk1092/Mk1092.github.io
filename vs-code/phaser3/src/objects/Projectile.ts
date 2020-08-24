@@ -17,6 +17,7 @@ namespace GreedyArcher{
             this.setCollideWorldBounds(true)
 
             let vel = dir.normalize().scale(arrowLoadRate * Projectile.maxVelocity)
+
             this.setVelocity(vel.x, vel.y)
         }
 

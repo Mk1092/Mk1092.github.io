@@ -86,7 +86,7 @@ namespace GreedyArcher {
             Enemy.loadAnims(this)
             
             this.physics.add.collider(this.player, this.objects,
-                function(player : Player, obstacle : Danger){player.gotHit()})
+                function(player : Player, object : levelObject){object.playerCollide(player)/*player.gotHit()*/})
 
             this.physics.add.collider(this.projectiles, this.objects)
             
