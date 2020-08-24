@@ -1,11 +1,13 @@
 namespace GreedyArcher{
 
-    export class levelObject extends Phaser.Physics.Arcade.Image {
+    export class LevelObject extends Phaser.Physics.Arcade.Image {
         public playerCollide(player : Player){}
         public enemyCollide(enemy : Enemy){}
+        public isDanger() : boolean {return false}
     }
 
-    export class Danger extends levelObject {
+    export class Danger extends LevelObject {
+
         constructor(scene : BaseLevel, x: number, y : number){
             super(scene, x, y, "obstacle")
 
@@ -19,9 +21,11 @@ namespace GreedyArcher{
         public enemyCollide(enemy : Enemy){
             enemy.hitByDanger()
         }
+
+        public isDanger() : boolean {return true}
     }
 
-    export class Goal extends levelObject {
+    export class Goal extends LevelObject {
         constructor(scene : BaseLevel, x: number, y : number){
             super(scene, x, y, "goal")
 

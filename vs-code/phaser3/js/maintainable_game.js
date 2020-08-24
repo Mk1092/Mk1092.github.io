@@ -106,7 +106,7 @@ var GreedyArcher;
             _this.isMoving = false;
             _this.hitNumber = 0;
             _this.player = scene.player;
-            _this.obstacles = scene.objects;
+            _this.objects = scene.objects;
             _this.mimic = mimic;
             return _this;
         }
@@ -156,12 +156,14 @@ var GreedyArcher;
         Enemy.prototype.getNearestDangerDirection = function () {
             var distance = 10000;
             var dir = new Phaser.Math.Vector2(0, 0);
-            this.obstacles.children.each(function (obstacle) {
-                var newDir = this.body.position.clone().subtract(obstacle.body.position);
-                var newDist = newDir.length();
-                if (newDist < distance) {
-                    distance = newDist;
-                    dir = newDir;
+            this.objects.children.each(function (object) {
+                if (object.isDanger()) {
+                    var newDir = this.body.position.clone().subtract(object.body.center);
+                    var newDist = newDir.length();
+                    if (newDist < distance) {
+                        distance = newDist;
+                        dir = newDir;
+                    }
                 }
             }, this);
             return dir;
@@ -202,16 +204,17 @@ var GreedyArcher;
 })(GreedyArcher || (GreedyArcher = {}));
 var GreedyArcher;
 (function (GreedyArcher) {
-    var levelObject = /** @class */ (function (_super) {
-        __extends(levelObject, _super);
-        function levelObject() {
+    var LevelObject = /** @class */ (function (_super) {
+        __extends(LevelObject, _super);
+        function LevelObject() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        levelObject.prototype.playerCollide = function (player) { };
-        levelObject.prototype.enemyCollide = function (enemy) { };
-        return levelObject;
+        LevelObject.prototype.playerCollide = function (player) { };
+        LevelObject.prototype.enemyCollide = function (enemy) { };
+        LevelObject.prototype.isDanger = function () { return false; };
+        return LevelObject;
     }(Phaser.Physics.Arcade.Image));
-    GreedyArcher.levelObject = levelObject;
+    GreedyArcher.LevelObject = LevelObject;
     var Danger = /** @class */ (function (_super) {
         __extends(Danger, _super);
         function Danger(scene, x, y) {
@@ -225,8 +228,9 @@ var GreedyArcher;
         Danger.prototype.enemyCollide = function (enemy) {
             enemy.hitByDanger();
         };
+        Danger.prototype.isDanger = function () { return true; };
         return Danger;
-    }(levelObject));
+    }(LevelObject));
     GreedyArcher.Danger = Danger;
     var Goal = /** @class */ (function (_super) {
         __extends(Goal, _super);
@@ -239,7 +243,7 @@ var GreedyArcher;
             player.foundGoal();
         };
         return Goal;
-    }(levelObject));
+    }(LevelObject));
     GreedyArcher.Goal = Goal;
     var ObjectGroup = /** @class */ (function (_super) {
         __extends(ObjectGroup, _super);
@@ -700,7 +704,7 @@ var GreedyArcher;
             this.physics.add.collider(this.player, this.objects, function (player, object) { object.playerCollide(player); /*player.gotHit()*/ });
             this.physics.add.collider(this.projectiles, this.objects);
             this.physics.add.collider(this.objects, this.objects);
-            this.physics.add.collider(this.enemies, this.objects, function (enemy, obstacle) { enemy.hitByDanger(); });
+            this.physics.add.collider(this.enemies, this.objects, function (enemy, object) { object.enemyCollide(enemy); /*enemy.hitByDanger()*/ });
             this.physics.add.collider(this.enemies, this.projectiles, function (enemy, projectile) { enemy.hitByProjectile(); projectile.onHit(); });
             this.physics.add.collider(this.enemies, this.player, function (player, enemy) { player.gotHit(); });
         };
@@ -735,7 +739,7 @@ var GreedyArcher;
             _super.prototype.create.call(this);
             this.objects.createDanger(150, 150);
             this.objects.createDanger(120, 150);
-            this.objects.createGoal(0, -305);
+            this.objects.createGoal(0, -200);
             this.enemies.createEnemy(100, -200);
             this.enemies.createEnemy(-300, 250, false);
         };

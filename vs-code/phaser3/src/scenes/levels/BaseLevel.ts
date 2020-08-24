@@ -86,14 +86,14 @@ namespace GreedyArcher {
             Enemy.loadAnims(this)
             
             this.physics.add.collider(this.player, this.objects,
-                function(player : Player, object : levelObject){object.playerCollide(player)/*player.gotHit()*/})
+                function(player : Player, object : LevelObject){object.playerCollide(player)/*player.gotHit()*/})
 
             this.physics.add.collider(this.projectiles, this.objects)
             
             this.physics.add.collider(this.objects, this.objects)
 
             this.physics.add.collider(this.enemies, this.objects,
-                function(enemy : Enemy, obstacle : Danger){enemy.hitByDanger()})
+                function(enemy : Enemy, object : LevelObject){object.enemyCollide(enemy)/*enemy.hitByDanger()*/})
 
             this.physics.add.collider(this.enemies, this.projectiles,
                 function(enemy : Enemy, projectile : Projectile){enemy.hitByProjectile(); projectile.onHit()})

@@ -19,7 +19,7 @@ namespace GreedyArcher {
             
             this.objects.createDanger(150, 150)
             this.objects.createDanger(120, 150)
-            this.objects.createGoal(0, -305)
+            this.objects.createGoal(0, -200)
 
             this.enemies.createEnemy(100, -200)
             this.enemies.createEnemy(-300, 250, false)
