@@ -58,6 +58,7 @@ var GreedyArcher;
             _this.scene.add("Welcome", GreedyArcher.Welcome);
             _this.scene.add("Menu", GreedyArcher.Menu);
             _this.scene.add("Level1", GreedyArcher.Level1);
+            _this.scene.add("Level2", GreedyArcher.Level2);
             // start
             _this.scene.start("Welcome");
             return _this;
@@ -259,17 +260,22 @@ var GreedyArcher;
             _this.addMovementKey('S', 0, 1);
             _this.addMovementKey('D', 1, 0);
             var player = _this;
-            scene.setDebugText("Personaggio");
-            _this.addDownKeyCommand('Space', function () {
+            _this.addDownKeyCommand('Z', function () {
                 player.playerAim = !player.playerAim;
-                scene.setDebugText(player.playerAim ? "Personaggio" : "Centro");
+                Player.updateDebugText(player, scene);
             });
-            _this.addDownKeyCommand('P', function () {
+            _this.addDownKeyCommand('X', function () {
                 player.loadByDist = !player.loadByDist;
+                Player.updateDebugText(player, scene);
             });
-            _this.aimLine = _this.scene.add.line(0, 0, 0, 0, 0, 0, 0xff0000).setOrigin(0, 0);
+            Player.updateDebugText(player, scene);
+            _this.aimLine = _this.scene.add.line(0, 0, 0, 0, 0, 0, 0x000000).setOrigin(0, 0);
             return _this;
         }
+        Player.updateDebugText = function (player, scene) {
+            var message = "Z:" + (player.playerAim ? "Personaggio" : "Centro") + ", X:" + (player.loadByDist ? "Distanza" : "Tempo");
+            scene.setDebugText(message);
+        };
         Player.prototype.addMovementKey = function (key, xDir, yDir) {
             var MovKey = this.scene.input.keyboard.addKey(key);
             var player = this;
@@ -358,12 +364,11 @@ var GreedyArcher;
         };
         Player.prototype.setLine = function (start, end, time) {
             this.aimLine.destroy();
-            var color;
             var arrowLoadRate = this.getArrowLoadRate(end.clone().subtract(start).length(), time);
-            var red = 180 * arrowLoadRate;
-            var green = 70 * (1 - arrowLoadRate);
-            var blue = 20; //* arrowLoadRate * (1 - arrowLoadRate)
-            color = blue + 256 * (green + 256 * red);
+            var red = Phaser.Math.RoundTo(200 * arrowLoadRate, 0);
+            var green = Phaser.Math.RoundTo(255 * (1 - arrowLoadRate), 0);
+            var blue = 200 * arrowLoadRate * (1 - arrowLoadRate);
+            var color = blue + 256 * (green + 256 * red);
             this.aimLine = this.scene.add.line(0, 0, start.x, start.y, end.x, end.y, color).setOrigin(0, 0);
         };
         Player.prototype.removeAimLine = function () {
@@ -395,7 +400,7 @@ var GreedyArcher;
         Player.shotInterval = 500;
         //needed for space-based arrows loading
         Player.maxLoadingSpace = 150;
-        Player.maxLoadingTime = 3000; //ms
+        Player.maxLoadingTime = 1000; //ms
         return Player;
     }(Phaser.Physics.Arcade.Sprite));
     GreedyArcher.Player = Player;
@@ -497,7 +502,7 @@ var GreedyArcher;
         __extends(Menu, _super);
         function Menu() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.numLevels = 1;
+            _this.numLevels = 2;
             return _this;
         }
         // -------------------------------------------------------------------------
@@ -575,12 +580,6 @@ var GreedyArcher;
             });
             var text = this.add.text(0, 0, "Premi invio", GreedyArcher.GUIUtils.textStile);
             GreedyArcher.GUIUtils.setTextProperties(text, false, true);
-            /*text.setInteractive(new Phaser.Geom.Rectangle(0, 0, text.width, text.height), Phaser.Geom.Rectangle.Contains);
-            text.setShadow(3, 3, 'rgba(0,0,0,0.5)', 2);
-
-            text.on('pointerdown', function () {
-                console.log("hihihi")
-            })*/
             GreedyArcher.GUIUtils.setSizeablePos(50, 45, text, width, height);
             var keyObj = this.input.keyboard.addKey('Enter');
             keyObj.on('down', function (event) { this.scene.start("Menu"); }, this);
@@ -704,5 +703,31 @@ var GreedyArcher;
         return Level1;
     }(GreedyArcher.BaseLevel));
     GreedyArcher.Level1 = Level1;
+})(GreedyArcher || (GreedyArcher = {}));
+///<reference path = "BaseLevel.ts" />
+var GreedyArcher;
+(function (GreedyArcher) {
+    var Level2 = /** @class */ (function (_super) {
+        __extends(Level2, _super);
+        function Level2() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        Level2.prototype.preload = function () {
+            this.load.image('bg', './assets/pavement3.png');
+            this.load.image('obstacle', './assets/bomb.png');
+            this.load.image('projectile', './assets/arrow3.png');
+            this.load.spritesheet('player', './assets/archerD.png', { frameWidth: 52, frameHeight: 64 });
+            this.load.spritesheet('enemy', './assets/omino.png', { frameWidth: 26, frameHeight: 64 });
+        };
+        Level2.prototype.create = function () {
+            _super.prototype.create.call(this);
+            this.objects.createDanger(150, 150);
+            this.objects.createDanger(120, 150);
+            //this.enemies.createEnemy(100, -200)
+            //this.enemies.createEnemy(-300, 250, false)
+        };
+        return Level2;
+    }(GreedyArcher.BaseLevel));
+    GreedyArcher.Level2 = Level2;
 })(GreedyArcher || (GreedyArcher = {}));
 //# sourceMappingURL=maintainable_game.js.map

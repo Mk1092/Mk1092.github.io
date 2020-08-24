@@ -28,7 +28,7 @@ namespace GreedyArcher{
 
         // needed for time-based arrows loading
         arrowLoadTime = 0
-        static maxLoadingTime = 3000 //ms
+        static maxLoadingTime = 1000 //ms
 
         /*--------------------------------------------------------------------*/
 
@@ -48,19 +48,25 @@ namespace GreedyArcher{
             this.addMovementKey('D', 1, 0)
 
             let player = this
-            scene.setDebugText("Personaggio")
-            this.addDownKeyCommand('Space', function() {
+            
+            this.addDownKeyCommand('Z', function() {
                 player.playerAim = !player.playerAim
-
-                scene.setDebugText(player.playerAim ? "Personaggio" : "Centro")
-
+                Player.updateDebugText(player, scene)
             })
 
-            this.addDownKeyCommand('P', function(){
+            this.addDownKeyCommand('X', function(){
                 player.loadByDist = !player.loadByDist
+                Player.updateDebugText(player, scene)
             })
 
-            this.aimLine = this.scene.add.line(0, 0, 0, 0, 0, 0, 0xff0000).setOrigin(0, 0)
+            Player.updateDebugText(player, scene)
+
+            this.aimLine = this.scene.add.line(0, 0, 0, 0, 0, 0, 0x000000).setOrigin(0, 0)
+        }
+
+        private static updateDebugText(player : Player, scene : BaseLevel){
+            let message = "Z:" + (player.playerAim ? "Personaggio" : "Centro") + ", X:" + (player.loadByDist ? "Distanza" : "Tempo")
+            scene.setDebugText(message)
         }
 
         private addMovementKey(key : string, xDir : number, yDir : number){
@@ -170,18 +176,15 @@ namespace GreedyArcher{
         private setLine(start : Phaser.Math.Vector2, end : Phaser.Math.Vector2, time : number){
             this.aimLine.destroy()
             
-            let color : number
-
             let arrowLoadRate = this.getArrowLoadRate(end.clone().subtract(start).length(), time)
 
-            let red = 180 * arrowLoadRate
-            let green = 70 * (1 - arrowLoadRate)
-            let blue = 20 //* arrowLoadRate * (1 - arrowLoadRate)
+            let red =  Phaser.Math.RoundTo(200 * arrowLoadRate, 0)
+            let green = Phaser.Math.RoundTo(255 * (1 - arrowLoadRate), 0)
+            let blue = 200 * arrowLoadRate * (1 - arrowLoadRate)
 
-            color = blue + 256 * (green + 256 * red)
+            let color = blue + 256 * (green + 256 * red)
 
             this.aimLine = this.scene.add.line(0, 0, start.x, start.y, end.x, end.y, color).setOrigin(0, 0)
-            
        }
 
         private removeAimLine(){

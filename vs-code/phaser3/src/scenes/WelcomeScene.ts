@@ -37,13 +37,6 @@ namespace GreedyArcher {
             
             GUIUtils.setTextProperties(text, false, true)
 
-            /*text.setInteractive(new Phaser.Geom.Rectangle(0, 0, text.width, text.height), Phaser.Geom.Rectangle.Contains);
-            text.setShadow(3, 3, 'rgba(0,0,0,0.5)', 2);
-
-            text.on('pointerdown', function () {
-                console.log("hihihi")
-            })*/
-
             GUIUtils.setSizeablePos(50, 45, text, width, height)
 
             let keyObj = this.input.keyboard.addKey('Enter')

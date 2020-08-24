@@ -41,6 +41,7 @@ namespace GreedyArcher {
             this.scene.add("Welcome", Welcome);
             this.scene.add("Menu", Menu);
             this.scene.add("Level1", Level1);
+            this.scene.add("Level2", Level2);
 
             // start
             this.scene.start("Welcome")
