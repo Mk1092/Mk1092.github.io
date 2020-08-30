@@ -8,6 +8,8 @@ namespace GreedyArcher {
 
         objects : ObjectGroup
         projectiles : ProjectileGroup
+        walls : WallGroup
+
         debugText : Phaser.GameObjects.Text
 
         create(){
@@ -20,6 +22,7 @@ namespace GreedyArcher {
             this.player.update(time, delta)
             this.projectiles.preUpdate(time, delta)
             this.enemies.preUpdate(time, delta)
+            this.objects.preUpdate(time, delta)
         }
 
         /*/ --------------------------------------------------------------------
@@ -78,6 +81,7 @@ namespace GreedyArcher {
             this.player = new Player(this, 0, 0)
             this.objects = new ObjectGroup(this)
             this.enemies = new EnemyGroup(this)
+            this.walls = new WallGroup(this)
         }
 
         private initAnimsAndCollider(){
@@ -86,14 +90,15 @@ namespace GreedyArcher {
             Enemy.loadAnims(this)
             
             this.physics.add.collider(this.player, this.objects,
-                function(player : Player, object : LevelObject){object.playerCollide(player)/*player.gotHit()*/})
+                function(player : Player, object : LevelObject){object.onPlayerCollide(player)})
 
-            this.physics.add.collider(this.projectiles, this.objects)
+            this.physics.add.collider(this.projectiles, this.objects,
+                function(projectile : Projectile, object : LevelObject){object.onProjectileCollide(projectile)})
             
             this.physics.add.collider(this.objects, this.objects)
 
             this.physics.add.collider(this.enemies, this.objects,
-                function(enemy : Enemy, object : LevelObject){object.enemyCollide(enemy)/*enemy.hitByDanger()*/})
+                function(enemy : Enemy, object : LevelObject){object.onEnemyCollide(enemy)})
 
             this.physics.add.collider(this.enemies, this.projectiles,
                 function(enemy : Enemy, projectile : Projectile){enemy.hitByProjectile(); projectile.onHit()})
@@ -101,6 +106,13 @@ namespace GreedyArcher {
             this.physics.add.collider(this.enemies, this.player,
                 function(player : Player, enemy : Enemy){player.gotHit()})
 
+            this.physics.add.collider(this.walls, this.player)
+
+            this.physics.add.collider(this.walls, this.enemies)
+
+            this.physics.add.collider(this.walls, this.objects)
+
+            this.physics.add.collider(this.walls, this.projectiles)
         }
 
         public setDebugText(message : string){

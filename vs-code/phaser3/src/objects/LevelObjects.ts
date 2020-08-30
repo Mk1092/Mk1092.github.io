@@ -1,8 +1,10 @@
 namespace GreedyArcher{
 
     export class LevelObject extends Phaser.Physics.Arcade.Image {
-        public playerCollide(player : Player){}
-        public enemyCollide(enemy : Enemy){}
+        public onPlayerCollide(player : Player){}
+        public onEnemyCollide(enemy : Enemy){}
+        public onProjectileCollide(projectile : Projectile){}
+        public onWallCollide(wall : Phaser.GameObjects.TileSprite){}
         public isDanger() : boolean {return false}
     }
 
@@ -14,11 +16,11 @@ namespace GreedyArcher{
             this.setScale(2, 2)
         }
 
-        public playerCollide(player : Player){
+        public onPlayerCollide(player : Player){
             player.gotHit()
         }
 
-        public enemyCollide(enemy : Enemy){
+        public onEnemyCollide(enemy : Enemy){
             enemy.hitByDanger()
         }
 
@@ -32,18 +34,66 @@ namespace GreedyArcher{
             this.setScale(2, 2)
         }
 
-        public playerCollide(player : Player){
+        public onPlayerCollide(player : Player){
             player.foundGoal()
+        }
+    }
+
+    export class Crate extends LevelObject {
+        //private overlap : Phaser.Physics.Arcade.Image
+
+        //private lastPlayerTouch = 0
+        //private positionBeforeTouch = new Phaser.Math.Vector2(0, 0)
+        private lastUpdate = 0
+        //private downTime = 200
+        private lastArrowTouch = 0
+        private static moveTime = 50 //ms
+
+        constructor(scene : BaseLevel, x: number, y : number){
+            super(scene, x, y, "crate")
+        }
+
+        /*public onPlayerCollide(player : Player){
+            this.lastPlayerTouch = this.lastUpdate
+            this.positionBeforeTouch = this.body.position.clone()
+            this.setImmovable()
+        }*/
+
+        public onWallCollide(wall : Phaser.GameObjects.TileSprite){
+            this.setImmovable()
+        }
+
+        public onProjectileCollide(projectile : Projectile){
+            this.lastArrowTouch = this.lastUpdate
+            this.setImmovable(false)
+            let vel = this.getCenter().subtract(projectile.getCenter())
+            vel = vel.normalize().scale(projectile.body.velocity.length())
+            this.setVelocity(vel.x, vel.y)
+        }
+
+        public update(time : number, delta : number){
+            /*if(this.lastPlayerTouch + this.downTime < time){
+                this.setImmovable(false)
+            }
+
+            this.lastUpdate = time*/
+            if(this.lastArrowTouch + Crate.moveTime < time){
+                this.setImmovable()
+            }
+
+            this.lastUpdate = time
         }
     }
 
     export class ObjectGroup extends Phaser.Physics.Arcade.Group {
 
-        private static dFactor = 0.999
-        private static bounce = 1
+        private static dangerDFactor = 0.999
+        private static dangerBounce = 0.99
         
         constructor(scene : Phaser.Scene){
             super(scene.physics.world, scene)
+
+            this.runChildUpdate = true
         }
 
         createDanger(x : number, y : number){
@@ -54,8 +104,8 @@ namespace GreedyArcher{
             danger.setCollideWorldBounds(true)
 
             danger.setDamping(true)
-            danger.setDrag(ObjectGroup.dFactor)
-            danger.setBounce(ObjectGroup.bounce)
+            danger.setDrag(ObjectGroup.dangerDFactor)
+            danger.setBounce(ObjectGroup.dangerBounce)
         }
 
         createGoal(x : number, y : number){
@@ -66,14 +116,16 @@ namespace GreedyArcher{
             goal.setCollideWorldBounds(true)
         }
 
-        /*addObject(child: Phaser.Physics.Arcade.Image | Phaser.Physics.Arcade.Sprite){
-            super.add(child, true)
+        public createCrate(x : number, y : number){
+            let crate = new Crate(<BaseLevel>this.scene, x, y)
 
-            child.setCollideWorldBounds(true)
+            super.add(crate, true)
 
-            child.setDamping(true)
-            child.setDrag(ObjectGroup.dFactor)
-            child.setBounce(ObjectGroup.bounce)
-        }*/
+            crate.setCollideWorldBounds(true)
+            
+            crate.setDamping(true)
+            crate.setDrag(0.75)
+            crate.setBounce(0)
+        }
     }
 }

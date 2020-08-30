@@ -209,8 +209,10 @@ var GreedyArcher;
         function LevelObject() {
             return _super !== null && _super.apply(this, arguments) || this;
         }
-        LevelObject.prototype.playerCollide = function (player) { };
-        LevelObject.prototype.enemyCollide = function (enemy) { };
+        LevelObject.prototype.onPlayerCollide = function (player) { };
+        LevelObject.prototype.onEnemyCollide = function (enemy) { };
+        LevelObject.prototype.onProjectileCollide = function (projectile) { };
+        LevelObject.prototype.onWallCollide = function (wall) { };
         LevelObject.prototype.isDanger = function () { return false; };
         return LevelObject;
     }(Phaser.Physics.Arcade.Image));
@@ -222,10 +224,10 @@ var GreedyArcher;
             _this.setScale(2, 2);
             return _this;
         }
-        Danger.prototype.playerCollide = function (player) {
+        Danger.prototype.onPlayerCollide = function (player) {
             player.gotHit();
         };
-        Danger.prototype.enemyCollide = function (enemy) {
+        Danger.prototype.onEnemyCollide = function (enemy) {
             enemy.hitByDanger();
         };
         Danger.prototype.isDanger = function () { return true; };
@@ -239,32 +241,84 @@ var GreedyArcher;
             _this.setScale(2, 2);
             return _this;
         }
-        Goal.prototype.playerCollide = function (player) {
+        Goal.prototype.onPlayerCollide = function (player) {
             player.foundGoal();
         };
         return Goal;
     }(LevelObject));
     GreedyArcher.Goal = Goal;
+    var Crate = /** @class */ (function (_super) {
+        __extends(Crate, _super);
+        function Crate(scene, x, y) {
+            var _this = _super.call(this, scene, x, y, "crate") || this;
+            //private overlap : Phaser.Physics.Arcade.Image
+            //private lastPlayerTouch = 0
+            //private positionBeforeTouch = new Phaser.Math.Vector2(0, 0)
+            _this.lastUpdate = 0;
+            //private downTime = 200
+            _this.lastArrowTouch = 0;
+            return _this;
+        }
+        /*public onPlayerCollide(player : Player){
+            this.lastPlayerTouch = this.lastUpdate
+            this.positionBeforeTouch = this.body.position.clone()
+            this.setImmovable()
+        }*/
+        Crate.prototype.onWallCollide = function (wall) {
+            this.setImmovable();
+        };
+        Crate.prototype.onProjectileCollide = function (projectile) {
+            this.lastArrowTouch = this.lastUpdate;
+            this.setImmovable(false);
+            var vel = this.getCenter().subtract(projectile.getCenter());
+            vel = vel.normalize().scale(projectile.body.velocity.length());
+            this.setVelocity(vel.x, vel.y);
+        };
+        Crate.prototype.update = function (time, delta) {
+            /*if(this.lastPlayerTouch + this.downTime < time){
+                this.setImmovable(false)
+            }
+
+            this.lastUpdate = time*/
+            if (this.lastArrowTouch + Crate.moveTime < time) {
+                this.setImmovable();
+            }
+            this.lastUpdate = time;
+        };
+        Crate.moveTime = 50; //ms
+        return Crate;
+    }(LevelObject));
+    GreedyArcher.Crate = Crate;
     var ObjectGroup = /** @class */ (function (_super) {
         __extends(ObjectGroup, _super);
         function ObjectGroup(scene) {
-            return _super.call(this, scene.physics.world, scene) || this;
+            var _this = _super.call(this, scene.physics.world, scene) || this;
+            _this.runChildUpdate = true;
+            return _this;
         }
         ObjectGroup.prototype.createDanger = function (x, y) {
             var danger = new Danger(this.scene, x, y);
             _super.prototype.add.call(this, danger, true);
             danger.setCollideWorldBounds(true);
             danger.setDamping(true);
-            danger.setDrag(ObjectGroup.dFactor);
-            danger.setBounce(ObjectGroup.bounce);
+            danger.setDrag(ObjectGroup.dangerDFactor);
+            danger.setBounce(ObjectGroup.dangerBounce);
         };
         ObjectGroup.prototype.createGoal = function (x, y) {
             var goal = new Goal(this.scene, x, y);
             _super.prototype.add.call(this, goal, true);
             goal.setCollideWorldBounds(true);
         };
-        ObjectGroup.dFactor = 0.999;
-        ObjectGroup.bounce = 1;
+        ObjectGroup.prototype.createCrate = function (x, y) {
+            var crate = new Crate(this.scene, x, y);
+            _super.prototype.add.call(this, crate, true);
+            crate.setCollideWorldBounds(true);
+            crate.setDamping(true);
+            crate.setDrag(0.75);
+            crate.setBounce(0);
+        };
+        ObjectGroup.dangerDFactor = 0.999;
+        ObjectGroup.dangerBounce = 0.99;
         return ObjectGroup;
     }(Phaser.Physics.Arcade.Group));
     GreedyArcher.ObjectGroup = ObjectGroup;
@@ -528,6 +582,23 @@ var GreedyArcher;
 })(GreedyArcher || (GreedyArcher = {}));
 var GreedyArcher;
 (function (GreedyArcher) {
+    var WallGroup = /** @class */ (function (_super) {
+        __extends(WallGroup, _super);
+        function WallGroup(scene) {
+            return _super.call(this, scene.physics.world, scene, {
+                collideWorldBounds: true,
+                immovable: true
+            }) || this;
+        }
+        WallGroup.prototype.createWall = function (x, y, width, height) {
+            _super.prototype.add.call(this, new Phaser.GameObjects.TileSprite(this.scene, x, y, width, height, "walls"), true);
+        };
+        return WallGroup;
+    }(Phaser.Physics.Arcade.Group));
+    GreedyArcher.WallGroup = WallGroup;
+})(GreedyArcher || (GreedyArcher = {}));
+var GreedyArcher;
+(function (GreedyArcher) {
     var GameOver = /** @class */ (function (_super) {
         __extends(GameOver, _super);
         function GameOver() {
@@ -645,6 +716,7 @@ var GreedyArcher;
             this.player.update(time, delta);
             this.projectiles.preUpdate(time, delta);
             this.enemies.preUpdate(time, delta);
+            this.objects.preUpdate(time, delta);
         };
         Object.defineProperty(BaseLevel.prototype, "gameRect", {
             /*/ --------------------------------------------------------------------
@@ -697,16 +769,21 @@ var GreedyArcher;
             this.player = new GreedyArcher.Player(this, 0, 0);
             this.objects = new GreedyArcher.ObjectGroup(this);
             this.enemies = new GreedyArcher.EnemyGroup(this);
+            this.walls = new GreedyArcher.WallGroup(this);
         };
         BaseLevel.prototype.initAnimsAndCollider = function () {
             GreedyArcher.Player.loadAnims(this);
             GreedyArcher.Enemy.loadAnims(this);
-            this.physics.add.collider(this.player, this.objects, function (player, object) { object.playerCollide(player); /*player.gotHit()*/ });
-            this.physics.add.collider(this.projectiles, this.objects);
+            this.physics.add.collider(this.player, this.objects, function (player, object) { object.onPlayerCollide(player); });
+            this.physics.add.collider(this.projectiles, this.objects, function (projectile, object) { object.onProjectileCollide(projectile); });
             this.physics.add.collider(this.objects, this.objects);
-            this.physics.add.collider(this.enemies, this.objects, function (enemy, object) { object.enemyCollide(enemy); /*enemy.hitByDanger()*/ });
+            this.physics.add.collider(this.enemies, this.objects, function (enemy, object) { object.onEnemyCollide(enemy); });
             this.physics.add.collider(this.enemies, this.projectiles, function (enemy, projectile) { enemy.hitByProjectile(); projectile.onHit(); });
             this.physics.add.collider(this.enemies, this.player, function (player, enemy) { player.gotHit(); });
+            this.physics.add.collider(this.walls, this.player);
+            this.physics.add.collider(this.walls, this.enemies);
+            this.physics.add.collider(this.walls, this.objects);
+            this.physics.add.collider(this.walls, this.projectiles);
         };
         BaseLevel.prototype.setDebugText = function (message) {
             if (this.debugText)
@@ -734,14 +811,22 @@ var GreedyArcher;
             this.load.spritesheet('player', './assets/archerD.png', { frameWidth: 52, frameHeight: 64 });
             this.load.spritesheet('enemy', './assets/omino.png', { frameWidth: 26, frameHeight: 64 });
             this.load.image('goal', './assets/goal.png');
+            this.load.image('walls', './assets/pavement2.png');
+            this.load.image('crate', './assets/pavement.png');
         };
         Level1.prototype.create = function () {
             _super.prototype.create.call(this);
+            this.player.setY(50);
             this.objects.createDanger(150, 150);
             this.objects.createDanger(120, 150);
-            this.objects.createGoal(0, -200);
-            this.enemies.createEnemy(100, -200);
-            this.enemies.createEnemy(-300, 250, false);
+            this.objects.createGoal(0, -275);
+            this.enemies.createEnemy(-200, 0);
+            this.enemies.createEnemy(250, 0, false);
+            this.walls.createWall(-65, -250, 50, 100);
+            this.walls.createWall(65, -260, 50, 80);
+            this.walls.createWall(55, -210, 70, 20);
+            this.walls.createWall(65, -135, 50, 70);
+            this.objects.createCrate(0, -160);
         };
         return Level1;
     }(GreedyArcher.BaseLevel));
@@ -760,16 +845,19 @@ var GreedyArcher;
             this.load.image('obstacle', './assets/bomb.png');
             this.load.image('projectile', './assets/arrow3.png');
             this.load.spritesheet('player', './assets/archerD.png', { frameWidth: 52, frameHeight: 64 });
-            this.load.spritesheet('enemy', './assets/omino.png', { frameWidth: 26, frameHeight: 64 });
             this.load.image('goal', './assets/goal.png');
+            this.load.image('walls', './assets/pavement2.png');
+            this.load.image('crate', './assets/pavement.png');
         };
         Level2.prototype.create = function () {
             _super.prototype.create.call(this);
-            this.objects.createDanger(150, 150);
-            this.objects.createDanger(120, 150);
-            this.objects.createGoal(300, 300);
-            //this.enemies.createEnemy(100, -200)
-            //this.enemies.createEnemy(-300, 250, false)
+            this.player.setY(50);
+            this.objects.createGoal(0, -275);
+            this.walls.createWall(-65, -250, 50, 100);
+            this.walls.createWall(65, -260, 50, 80);
+            this.walls.createWall(55, -210, 70, 20);
+            this.walls.createWall(65, -135, 50, 70);
+            this.objects.createCrate(0, -160);
         };
         return Level2;
     }(GreedyArcher.BaseLevel));

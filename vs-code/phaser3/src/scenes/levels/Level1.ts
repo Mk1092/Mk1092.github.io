@@ -5,24 +5,34 @@ namespace GreedyArcher {
     export class Level1 extends BaseLevel {
 
         preload() {
-
             this.load.image('bg', './assets/pavement3.png')
             this.load.image('obstacle', './assets/bomb.png')
             this.load.image('projectile', './assets/arrow3.png')
             this.load.spritesheet('player', './assets/archerD.png', { frameWidth: 52, frameHeight: 64 })
             this.load.spritesheet('enemy', './assets/omino.png', { frameWidth: 26, frameHeight: 64 })
             this.load.image('goal', './assets/goal.png')
+            this.load.image('walls', './assets/pavement2.png')
+            this.load.image('crate', './assets/pavement.png')
         }
 
         public create() {
             super.create()
             
+            this.player.setY(50)
+
             this.objects.createDanger(150, 150)
             this.objects.createDanger(120, 150)
-            this.objects.createGoal(0, -200)
+            this.objects.createGoal(0, -275)
 
-            this.enemies.createEnemy(100, -200)
-            this.enemies.createEnemy(-300, 250, false)
+            this.enemies.createEnemy(-200, 0)
+            this.enemies.createEnemy(250, 0, false)
+
+            this.walls.createWall(-65, -250, 50, 100)
+            this.walls.createWall(65, -260, 50, 80)
+            this.walls.createWall(55, -210, 70, 20)
+            this.walls.createWall(65, -135, 50, 70)
+            
+            this.objects.createCrate(0, -160)
         }
 
         /*public update(time : number, delta : number){
