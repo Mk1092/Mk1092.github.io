@@ -59,6 +59,7 @@ var GreedyArcher;
             _this.scene.add("Menu", GreedyArcher.Menu);
             _this.scene.add("Level1", GreedyArcher.Level1);
             _this.scene.add("Level2", GreedyArcher.Level2);
+            _this.scene.add("Level3", GreedyArcher.Level3);
             // start
             _this.scene.start("Welcome");
             return _this;
@@ -155,7 +156,7 @@ var GreedyArcher;
         };
         Enemy.prototype.getNearestDangerDirection = function () {
             var distance = 10000;
-            var dir = new Phaser.Math.Vector2(0, 0);
+            var dir = new Phaser.Math.Vector2(distance, distance);
             this.objects.children.each(function (object) {
                 if (object.isDanger()) {
                     var newDir = this.body.position.clone().subtract(object.body.center);
@@ -170,8 +171,9 @@ var GreedyArcher;
         };
         Enemy.prototype.update = function () {
             this.animateMovement();
-            if (this.hitNumber > 0)
+            if (this.hitNumber > 0) {
                 return;
+            }
             var escapeDir = this.getNearestDangerDirection();
             if (escapeDir.length() < this.minDangerDistance) {
                 escapeDir.normalize().scale(this.runningSpeed);
@@ -614,7 +616,7 @@ var GreedyArcher;
         __extends(Menu, _super);
         function Menu() {
             var _this = _super !== null && _super.apply(this, arguments) || this;
-            _this.numLevels = 2;
+            _this.numLevels = 3;
             return _this;
         }
         // -------------------------------------------------------------------------
@@ -862,5 +864,42 @@ var GreedyArcher;
         return Level2;
     }(GreedyArcher.BaseLevel));
     GreedyArcher.Level2 = Level2;
+})(GreedyArcher || (GreedyArcher = {}));
+///<reference path = "BaseLevel.ts" />
+var GreedyArcher;
+(function (GreedyArcher) {
+    var Level3 = /** @class */ (function (_super) {
+        __extends(Level3, _super);
+        function Level3() {
+            return _super !== null && _super.apply(this, arguments) || this;
+        }
+        Level3.prototype.preload = function () {
+            this.load.image('bg', './assets/pavement3.png');
+            this.load.image('obstacle', './assets/bomb.png');
+            this.load.image('projectile', './assets/arrow3.png');
+            this.load.spritesheet('player', './assets/archerD.png', { frameWidth: 52, frameHeight: 64 });
+            this.load.spritesheet('enemy', './assets/omino.png', { frameWidth: 26, frameHeight: 64 });
+            this.load.image('goal', './assets/goal.png');
+            this.load.image('walls', './assets/pavement2.png');
+            this.load.image('crate', './assets/pavement.png');
+        };
+        Level3.prototype.create = function () {
+            _super.prototype.create.call(this);
+            this.objects.createGoal(0, -275);
+            this.player.setX(-50);
+            var coord = 275;
+            this.enemies.createEnemy(coord, coord, false);
+            this.enemies.createEnemy(0, coord);
+            this.enemies.createEnemy(-coord, coord, false);
+            this.enemies.createEnemy(-coord, 0);
+            this.enemies.createEnemy(-coord, -coord, false);
+            this.enemies.createEnemy(0, -coord);
+            this.enemies.createEnemy(coord, -coord, false);
+            this.enemies.createEnemy(coord, 0);
+            this.objects.createDanger(50, 0);
+        };
+        return Level3;
+    }(GreedyArcher.BaseLevel));
+    GreedyArcher.Level3 = Level3;
 })(GreedyArcher || (GreedyArcher = {}));
 //# sourceMappingURL=maintainable_game.js.map

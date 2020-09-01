@@ -18,6 +18,7 @@ namespace GreedyArcher {
             super(scene, x, y, mimic ? "player" : "enemy")
 
             this.player = scene.player
+
             this.objects = scene.objects
             this.mimic = mimic
         }
@@ -72,7 +73,7 @@ namespace GreedyArcher {
 
         private getNearestDangerDirection() : Phaser.Math.Vector2 {
             let distance = 10000
-            let dir = new Phaser.Math.Vector2(0, 0)
+            let dir = new Phaser.Math.Vector2(distance, distance)
             
             this.objects.children.each(function(object : LevelObject) {
                 if(object.isDanger()){
@@ -92,8 +93,9 @@ namespace GreedyArcher {
             
             this.animateMovement()
                 
-            if(this.hitNumber > 0)
+            if(this.hitNumber > 0){
                 return
+            }
 
             let escapeDir = this.getNearestDangerDirection()
             if(escapeDir.length() < this.minDangerDistance){

@@ -1,7 +1,7 @@
 namespace GreedyArcher {
 
     export class Menu extends Phaser.Scene {
-        private numLevels = 2
+        private numLevels = 3
 
         // -------------------------------------------------------------------------
         public create(): void {
