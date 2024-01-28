@@ -34,6 +34,7 @@
               $('#foreground').fadeIn(10000);
               await delay(5000);
               $('#yt').fadeIn(2000);
+              $('#reload').fadeIn(2000);
             })();
         }
         
@@ -52,6 +53,10 @@
                 playJoke();
             }
         }
+        
+        function loadGame(){
+            window.location = window.location.href.split("?")[0];
+        }
     </script>
     <style>
         img#foreground {
@@ -67,7 +72,16 @@
             left: 37vw;
             width: 25vw;
             height: 25vw;
-            z-index: 1;
+            z-index: 0.95;
+            display: none;
+        }
+        button#reload {
+            position: fixed;
+            bottom: 20vh;
+            width:25vw;
+            left: 37vw;
+            font-size: large;
+            z-index: 0.95;
             display: none;
         }
     </style>
@@ -76,8 +90,10 @@
 <body>
     <img id='foreground' src="assets/rickroll_4k.jpg">
     
-    <!--<iframe id='yt'src="https://www.youtube.com/embed/tgbNymZ7vqY?autoplay=1&mute=1"></iframe>-->
-    <iframe id='yt'src="https://www.youtube.com/embed/dQw4w9WgXcQ"></iframe> 
+    <iframe id='yt'src="https://www.youtube.com/embed/dQw4w9WgXcQ"></iframe>
+    
+    <button id='reload' onclick="loadGame()">Vai al gioco (no rickroll)</button>
+    
     <br>
     <br>
     <br>
