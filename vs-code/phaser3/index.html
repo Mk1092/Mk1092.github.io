@@ -13,10 +13,12 @@
     <script src="js/phaser.js"></script>
     <script src="js/require.js"></script>
     <script src="js/maintainable_game.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script>
-        function playJoke(){
-            const delay = ms => new Promise(res => setTimeout(res, ms));
-            
+        
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+    
+        function playJoke(){           
             const rickroll = async () => {
               await delay(5000);
               console.log("Waited 5s, redirecting");
@@ -25,23 +27,14 @@
             rickroll();
         }
         
-        function playAudio(){
-            // let myAudio = document.querySelector('#audio');
-            // myAudio.play();
-            
-            
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-            navigator.mediaDevices
-                //.getUserMedia({ audio: true })
-                .getUserMedia({ audio: true, video:true })
-                //.getAutoplayPolicy("mediaelement")
-                .then(() => {
-                    let myAudio = document.querySelector('#audio')
-                    myAudio.play()
-                })
-                .catch(reason => console.error(`Audio permissions denied: ${reason}`));
-            
+        function playForeground(){
+            (async () => {
+              await delay(5000);
+              $('#game_content').hide();
+              $('#foreground').fadeIn(10000);
+              await delay(5000);
+              $('#yt').fadeIn(2000);
+            })();
         }
         
         function playAll(){
@@ -52,26 +45,44 @@
             console.log(r);
             
             if (a == 1){
-                // playAudio();
+                playForeground();
             }
             
             if (r == 1){
                 playJoke();
             }
         }
-        
-        //document.querySelector('#audio').addEventListener("load", playAll);
     </script>
+    <style>
+        img#foreground {
+            position: fixed;
+            left: 25vw;
+            width: 50vw;
+            z-index: 0.9;
+            display: none;
+        }
+        iframe#yt {
+            position: fixed;
+            top: 10vh;
+            left: 37vw;
+            width: 25vw;
+            height: 25vw;
+            z-index: 1;
+            display: none;
+        }
+    </style>
 </head>
 
 <body>
+    <img id='foreground' src="assets/rickroll_4k.jpg">
+    
+    <!--<iframe id='yt'src="https://www.youtube.com/embed/tgbNymZ7vqY?autoplay=1&mute=1"></iframe>-->
+    <iframe id='yt'src="https://www.youtube.com/embed/dQw4w9WgXcQ"></iframe> 
     <br>
     <br>
     <br>
     <br>
     <div id="game_content" class="canvas-container"></div>
-    
-    <!--<audio id="audio" src="assets/rickroll.MP3"></audio>>-->
     <script>
         playAll()
     </script>
