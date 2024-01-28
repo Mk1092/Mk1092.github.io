@@ -13,6 +13,55 @@
     <script src="js/phaser.js"></script>
     <script src="js/require.js"></script>
     <script src="js/maintainable_game.js"></script>
+    <script>
+        function playJoke(){
+            const delay = ms => new Promise(res => setTimeout(res, ms));
+            
+            const rickroll = async () => {
+              await delay(5000);
+              console.log("Waited 5s, redirecting");
+              window.location.href = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+            };
+            rickroll();
+        }
+        
+        function playAudio(){
+            // let myAudio = document.querySelector('#audio');
+            // myAudio.play();
+            
+            
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+            navigator.mediaDevices
+                //.getUserMedia({ audio: true })
+                .getUserMedia({ audio: true, video:true })
+                //.getAutoplayPolicy("mediaelement")
+                .then(() => {
+                    let myAudio = document.querySelector('#audio')
+                    myAudio.play()
+                })
+                .catch(reason => console.error(`Audio permissions denied: ${reason}`));
+            
+        }
+        
+        function playAll(){
+            const urlParams = new URLSearchParams(window.location.search);
+            const a = urlParams.get('a');
+            const r = urlParams.get('r');
+            console.log(a);
+            console.log(r);
+            
+            if (a == 1){
+                // playAudio();
+            }
+            
+            if (r == 1){
+                playJoke();
+            }
+        }
+        
+        //document.querySelector('#audio').addEventListener("load", playAll);
+    </script>
 </head>
 
 <body>
@@ -21,6 +70,11 @@
     <br>
     <br>
     <div id="game_content" class="canvas-container"></div>
+    
+    <!--<audio id="audio" src="assets/rickroll.MP3"></audio>>-->
+    <script>
+        playAll()
+    </script>
 </body>
 
 </html>
